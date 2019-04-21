@@ -38,15 +38,6 @@ public:
         return tree[node] = update_range(l_node, begin, mid, l_pos, r_pos, dif) + update_range(r_node, mid+1, end, l_pos, r_pos, dif);
     }
     
-    void propagate(int node, int begin, int end, long long dif) {
-        if (dif == IDENTITY) return;
-        tree[node] += (end - begin + 1) * dif;
-        if (begin ^ end) {
-            lazy[l_node] += dif;
-            lazy[r_node] += dif;
-        }
-    }
-    
     long long query(int node, int begin, int end, int l_pos, int r_pos) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = IDENTITY;
@@ -54,6 +45,15 @@ public:
         if (end < l_pos || r_pos < begin) return IDENTITY;
         if (l_pos <= begin && end <= r_pos) return tree[node];
         return query(l_node, begin, mid, l_pos, r_pos) + query(r_node, mid+1, end, l_pos, r_pos);
+    }
+    
+    void propagate(int node, int begin, int end, long long dif) {
+        if (dif == IDENTITY) return;
+        tree[node] += (end - begin + 1) * dif;
+        if (begin ^ end) {
+            lazy[l_node] += dif;
+            lazy[r_node] += dif;
+        }
     }
     
 };
