@@ -1,5 +1,6 @@
-// Segment Tree
-
+/*
+ Segment Tree by index
+*/
 #include <cstdio>
 #include <vector>
 
