@@ -65,7 +65,7 @@ struct HeavyLightDecomposition {
     
     HeavyLightDecomposition(int size) {
         max_segment_tree = MaxSegmentTree(size-1);
-        edges.resize(size+1);
+        edges.resize(size);
         cnt.resize(size+1);
         p_node.resize(size+1);
         h_node.resize(size+1);
@@ -73,37 +73,39 @@ struct HeavyLightDecomposition {
         adj.resize(size+1);
     }
     
-    // build count (counting descendants including root)
-    int traverse1(int root, int parent) {
+    // build p_node, count (counting descendants including root)
+    int traverse1(int root) {
         cnt[root] = 1;
-        for (auto child : adj[root])
-            if (child ^ parent)
-                cnt[root] += traverse1(child, root);
+        for (auto child : adj[root]) {
+            if (child ^ p_node[root]) {
+                p_node[child] = root;
+                cnt[root] += traverse1(child);
+            }
+        }
         return cnt[root];
     }
     
-    // build (h_node, p_node, f)
-    void traverse2(int root, int parent) {
+    // build h_node, f
+    void traverse2(int root) {
         int first = 0;
         for (auto child : adj[root])
-            if (child ^ parent && cnt[first] < cnt[child])
+            if (child ^ p_node[root] && cnt[first] < cnt[child])
                 first = child;
         for (auto child : adj[root])
-            if (child ^ parent && child ^ first)
-                traverse2(child, root);
+            if (child ^ p_node[root] && child ^ first)
+                traverse2(child);
         
         if (!h_node[root])
             h_node[root] = root;
         if (first) {
             h_node[first] = h_node[root];
-            traverse2(first, root);
+            traverse2(first);
         }
-        p_node[root] = parent;
         f[root] = ++size;
     }
     
     void init() {
-        for (int i = 1; i <= size; ++i) {
+        for (int i = 1; i < size; ++i) {
             if (p_node[edges[i].p] == edges[i].c)
                 swap(edges[i].c, edges[i].p);
             update(i, edges[i].val);
@@ -130,6 +132,12 @@ struct HeavyLightDecomposition {
         ret = max(ret, max_segment_tree.query(1, 1, size-1, f[s_node], f[d_node]-1));
         return ret;
     }
+    
+    void print_test() {
+        for (int i = 0; i < size; ++i) {
+            printf("edges[%d].c\n", edges[i].c);
+        }
+    }
 };
 
 int main() {
@@ -145,8 +153,8 @@ int main() {
         hld.adj[b].push_back(a);
     }
     
-    hld.traverse1(1, 0);
-    hld.traverse2(1, 0);
+    hld.traverse1(1);
+    hld.traverse2(1);
     hld.init();
     
     scanf("%d", &M);
