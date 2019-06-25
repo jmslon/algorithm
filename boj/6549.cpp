@@ -32,6 +32,19 @@ struct SegmentTree {
         return whichof(l_query, r_query);
     }
     
+    virtual int whichof(int l, int r) = 0;
+};
+
+struct MinSegmentTree : public SegmentTree {
+    MinSegmentTree(int size) : SegmentTree(size) {
+        MEANINGLESS = -1;
+    }
+    int whichof(int l, int r) {
+        if (l == MEANINGLESS) return r;
+        if (r == MEANINGLESS) return l;
+        return arr[l] < arr[r] ? l : r;
+    }
+    
     long long max_area(int l_pos, int r_pos) {
         if (l_pos > r_pos) return -1;
         int min_pos = query(1, 1, (int)arr.size()-1, l_pos, r_pos);
@@ -39,19 +52,6 @@ struct SegmentTree {
         ret = max(ret, max_area(l_pos, min_pos-1));
         ret = max(ret, max_area(min_pos+1, r_pos));
         return ret;
-    }
-    
-    virtual int whichof(int l, int r) = 0;
-};
-
-struct MaxSegmentTree : public SegmentTree {
-    MaxSegmentTree(int size) : SegmentTree(size) {
-        MEANINGLESS = -1;
-    }
-    int whichof(int l, int r) {
-        if (l == MEANINGLESS) return r;
-        if (r == MEANINGLESS) return l;
-        return arr[l] < arr[r] ? l : r;
     }
 };
 
@@ -61,7 +61,7 @@ int main(int argc, const char * argv[]) {
     while (1) {
         scanf("%d", &N);
         if (N == 0) break;
-        MaxSegmentTree segment_tree(N);
+        MinSegmentTree segment_tree(N);
         for (int i = 1; i <= N; ++i)
             scanf("%lld", &segment_tree.arr[i]);
         segment_tree.init(1, 1, N);
