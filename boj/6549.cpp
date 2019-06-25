@@ -42,17 +42,17 @@ public:
         return ret;
     }
     
-    virtual int whichof(int l_idx, int r_idx) = 0;
+    virtual int whichof(int l, int r) = 0;
 };
 
 struct MaxSegmentTree : public SegmentTree {
     MaxSegmentTree(int size) : SegmentTree(size) {
         MEANINGLESS = -1;
     }
-    int whichof(int l_idx, int r_idx) {
-        if (l_idx == MEANINGLESS) return r_idx;
-        if (r_idx == MEANINGLESS) return l_idx;
-        return arr[l_idx] < arr[r_idx] ? l_idx : r_idx;
+    int whichof(int l, int r) {
+        if (l == MEANINGLESS) return r;
+        if (r == MEANINGLESS) return l;
+        return arr[l] < arr[r] ? l : r;
     }
 };
 
