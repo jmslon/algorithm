@@ -132,12 +132,6 @@ struct HeavyLightDecomposition {
         ret = max(ret, max_segment_tree.query(1, 1, size-1, f[s_node], f[d_node]-1));
         return ret;
     }
-    
-    void print_test() {
-        for (int i = 0; i < size; ++i) {
-            printf("edges[%d].c\n", edges[i].c);
-        }
-    }
 };
 
 int main() {
