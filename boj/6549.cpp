@@ -7,8 +7,7 @@
 
 using namespace std;
 
-class SegmentTree {
-public:
+struct SegmentTree {
     vector<long long> arr;
     vector<int> tree;
     int MEANINGLESS;
