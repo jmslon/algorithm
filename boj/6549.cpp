@@ -20,9 +20,9 @@ public:
     
     int init(int node, int begin, int end) {
         if (begin == end) return tree[node] = begin;
-        int l_query = init(l_node, begin, mid);
-        int r_query = init(r_node, mid+1, end);
-        return tree[node] = whichof(l_query, r_query);
+        int l_init = init(l_node, begin, mid);
+        int r_init = init(r_node, mid+1, end);
+        return tree[node] = whichof(l_init, r_init);
     }
     
     int query(int node, int begin, int end, int l_pos, int r_pos) {
