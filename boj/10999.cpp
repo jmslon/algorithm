@@ -1,7 +1,6 @@
 
 #include <cstdio>
 #include <vector>
-#include <algorithm>
 
 #define l_node (node<<1)
 #define r_node (l_node+1)
