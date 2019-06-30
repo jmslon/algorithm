@@ -24,18 +24,10 @@ struct SegmentTree {
     }
     
     ll init(int node, int begin, int end) {
-        if (begin == end) return tree[node] = begin;
+        if (begin == end) return tree[node] = arr[begin];
         ll l_init = init(l_node, begin, mid);
         ll r_init = init(r_node, mid+1, end);
         return tree[node] = whichof(l_init, r_init);
-    }
-    
-    ll update(int node, int begin, int end, int pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
-        if (begin == end) return tree[node] = val;
-        ll l_update = update(l_node, begin, mid, pos, val);
-        ll r_update = update(r_node, mid+1, end, pos, val);
-        return tree[node] = whichof(l_update, r_update);
     }
     
     ll query(int node, int begin, int end, int l_pos, int r_pos) {
