@@ -1,6 +1,6 @@
 /*
  Segment Tree by index
-*/
+ */
 #include <cstdio>
 #include <vector>
 
@@ -8,53 +8,89 @@
 #define l_node (node<<1)
 #define r_node (l_node+1)
 
+typedef long long ll;
+
 using namespace std;
 
 struct SegmentTree {
-    vector<int> arr, tree;
-    int MEANINGLESS;
+    int size;
+    vector<ll> arr, tree;
+    ll MEANINGLESS;
     
     SegmentTree(int size) {
+        this->size = size;
         arr.resize(size);
         tree.resize(size<<2);
     }
     
-    int init(int node, int begin, int end) {
+    ll init(int node, int begin, int end) {
         if (begin == end) return tree[node] = begin;
-        int l_init = init(l_node, begin, mid);
-        int r_init = init(r_node, mid+1, end);
+        ll l_init = init(l_node, begin, mid);
+        ll r_init = init(r_node, mid+1, end);
         return tree[node] = whichof(l_init, r_init);
     }
     
-    int query(int node, int begin, int end, int l_pos, int r_pos) {
-        if (end < l_pos || r_pos < begin) return MEANINGLESS;
+    ll update(int node, int begin, int end, int pos, ll val) {
+        if (pos < begin || end < pos) return tree[node];
+        if (begin == end) return tree[node] = val;
+        ll l_update = update(l_node, begin, mid, pos, val);
+        ll r_update = update(r_node, mid+1, end, pos, val);
+        return tree[node] = whichof(l_update, r_update);
+    }
+    
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        if (r_pos < begin || end < l_pos) return MEANINGLESS;
         if (l_pos <= begin && end <= r_pos) return tree[node];
-        int l_query = query(l_node, begin, mid, l_pos, r_pos);
-        int r_query = query(r_node, mid+1, end, l_pos, r_pos);
+        ll l_query = query(l_node, begin, mid, l_pos, r_pos);
+        ll r_query = query(r_node, mid+1, end, l_pos, r_pos);
         return whichof(l_query, r_query);
     }
     
-    virtual int whichof(int l, int r) = 0;
+    virtual ll whichof(ll l, ll r) = 0;
 };
 
-struct MaxSegmentTree: public SegmentTree {
+struct MaxSegmentTree : public SegmentTree {
     MaxSegmentTree(int size) : SegmentTree(size) {
         MEANINGLESS = -1;
     }
-    virtual int whichof(int l, int r) {
+    virtual ll whichof(ll l, ll r) {
         if (l == MEANINGLESS) return r;
         if (r == MEANINGLESS) return l;
         return arr[l] > arr[r] ? l : r;
     }
 };
 
-struct MinSegmentTree: public SegmentTree {
+struct MinSegmentTree : public SegmentTree {
     MinSegmentTree(int size) : SegmentTree(size) {
         MEANINGLESS = 0x7fffffff;
     }
-    virtual int whichof(int l, int r) {
+    virtual ll whichof(ll l, ll r) {
         if (l == MEANINGLESS) return r;
         if (r == MEANINGLESS) return l;
         return arr[l] < arr[r] ? l : r;
     }
 };
+
+int main() {
+    
+    int N;
+    scanf("%d", &N);
+    
+    MinSegmentTree min_seg(N);
+    MaxSegmentTree max_seg(N);
+    
+    for (int i = 0; i < N; ++i) {
+        int tmp;
+        scanf("%d", &tmp);
+        min_seg.arr[i] = tmp;
+        max_seg.arr[i] = tmp;
+    }
+    min_seg.init(1, 0, N-1);
+    max_seg.init(1, 0, N-1);
+    for (int i = 0; i < N-1; ++i) {
+        for (int j = i+1; j < N; ++j) {
+            printf("%d~%d : [%lld, %lld]\n", i, j, min_seg.query(1, 0, N-1, i, j), max_seg.query(1, 0, N-1, i, j));
+        }
+    }
+    return 0;
+}
