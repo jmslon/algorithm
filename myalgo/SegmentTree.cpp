@@ -24,7 +24,7 @@ struct SegmentTree {
     }
     
     ll init(int node, int begin, int end) {
-        if (begin == end) return tree[node] = arr[begin];
+        if (begin == end) return tree[node] = begin;
         ll l_init = init(l_node, begin, mid);
         ll r_init = init(r_node, mid+1, end);
         return tree[node] = whichof(l_init, r_init);
