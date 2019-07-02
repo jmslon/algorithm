@@ -1,168 +1,138 @@
 /*
- boj.13510.cpp
- Heavy-Light Decomposition using Maximum Segment Tree by value.
+ boj.1761.cpp
+ Heavy-Light Decomposition using Sum Segment Tree.
  */
 
+
 #include <cstdio>
-#include <cmath>
 #include <vector>
 #include <algorithm>
 
-#define mid ((begin+end)>>1)
-#define l_node (node<<1)
-#define r_node (l_node+1)
+#define l_node  (node<<1)
+#define r_node  ((l_node)+1)
+#define mid     ((begin+end)>>1)
+
+typedef long long ll;
 
 using namespace std;
 
 struct SegmentTree {
-    vector<int> tree;
-    int MEANINGLESS;
+    vector<ll> tree;
     
     SegmentTree(int size) {
         tree.resize(size<<2);
     }
     
-    int update(int node, int begin, int end, int pos, int val) {
+    ll update(int node, int begin, int end, int pos, ll val) {
         if (pos < begin || end < pos) return tree[node];
         if (begin == end) return tree[node] = val;
-        int l_update = update(l_node, begin, mid, pos, val);
-        int r_update = update(r_node, mid+1, end, pos, val);
-        return tree[node] = whichof(l_update, r_update);
+        ll l_update = update(l_node, begin, mid, pos, val);
+        ll r_update = update(r_node, mid+1, end, pos, val);
+        return tree[node] = l_update + r_update;
     }
     
-    int query(int node, int begin, int end, int l_pos, int r_pos) {
-        if (r_pos < begin || end < l_pos) return MEANINGLESS;
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        if (r_pos < begin || end < l_pos) return 0;
         if (l_pos <= begin && end <= r_pos) return tree[node];
-        int l_query = query(l_node, begin, mid, l_pos, r_pos);
-        int r_query = query(r_node, mid+1, end, l_pos, r_pos);
-        return whichof(l_query, r_query);
-    }
-    
-    virtual int whichof(int l, int r) = 0;
-};
-
-struct MaxSegmentTree: public SegmentTree {
-    MaxSegmentTree(int size) : SegmentTree(size) {
-        MEANINGLESS = -1;
-    }
-    virtual int whichof(int l, int r) {
-        return l > r ? l : r;
+        ll l_query = query(l_node, begin, mid, l_pos, r_pos);
+        ll r_query = query(r_node, mid+1, end, l_pos, r_pos);
+        return l_query + r_query;
     }
 };
 
 struct Edge {
-    int c, p, val;
+    int c, p, w;
+    bool operator < (const Edge &a) const {
+        return c < a.c;
+    }
 };
 
-struct HeavyLightDecomposition {
-    MaxSegmentTree max_segment_tree = NULL;
-    vector<int> cnt, p_node, h_node, f;
-    // f's parameter MUST be a node NOT idx.
-    // f's return would be segment tree's pos.
-    vector<Edge> edges;
-    vector<vector<int> > adj;
+struct HLD {
     int size = 0;
+    vector<Edge> e;
+    vector<int> c, h, p, f;
+    vector<vector<int> > adj;
+    SegmentTree st;
     
-    HeavyLightDecomposition(int size) {
-        max_segment_tree = MaxSegmentTree(size-1);
-        edges.resize(size+1);
-        cnt.resize(size+1);
-        p_node.resize(size+1);
-        h_node.resize(size+1);
-        f.resize(size+1);
-        adj.resize(size+1);
+    HLD(int size) : st(size-1) {
+        // size == N+1
+        // this->size == N
+        e.resize(size);
+        c.resize(size);
+        h.resize(size);
+        p.resize(size);
+        f.resize(size);
+        adj.resize(size);
     }
     
-    // build count (counting descendants including root)
-    int traverse1(int root, int parent) {
-        cnt[root] = 1;
-        for (auto child : adj[root])
-            if (child ^ parent)
-                cnt[root] += traverse1(child, root);
-        return cnt[root];
-    }
-    
-    // build (h_node, p_node, f)
-    void traverse2(int root, int parent) {
-        int first = 0;
-        for (auto child : adj[root])
-            if (child ^ parent && cnt[first] < cnt[child])
-                first = child;
-        for (auto child : adj[root])
-            if (child ^ parent && child ^ first)
-                traverse2(child, root);
-        
-        if (!h_node[root])
-            h_node[root] = root;
-        if (first) {
-            h_node[first] = h_node[root];
-            traverse2(first, root);
+    int traverse1(int root) {
+        c[root] = 1;
+        for (int child : adj[root]) {
+            if (child ^ p[root]) {
+                p[child] = root;
+                c[root] += traverse1(child);
+            }
         }
-        p_node[root] = parent;
+        return c[root];
+    }
+    
+    void traverse2(int root) {
+        int first = 0;
+        for (int child : adj[root])
+            if (child ^ p[root]&& c[first] < c[child])
+                first = child;
+        for (int child : adj[root])
+            if (child ^ p[root] && child ^ first)
+                traverse2(child);
+        if (!h[root])
+            h[root] = root;
+        if (first) {
+            h[first] = h[root];
+            traverse2(first);
+        }
         f[root] = ++size;
     }
     
     void init() {
-        for (int i = 1; i <= size; ++i) {
-            if (p_node[edges[i].p] == edges[i].c)
-                swap(edges[i].c, edges[i].p);
-            update(i, edges[i].val);
+        for (int i = 1; i < size; ++i) {
+            if (p[e[i].p] == e[i].c)
+                swap(e[i].c, e[i].p);
+            st.update(1, 1, size-1, f[e[i].c], e[i].w);
         }
+        sort(e.begin(), e.end());
     }
     
-    void update(int idx, int val) {
-        int node = edges[idx].c;
-        max_segment_tree.update(1, 1, size-1, f[node], val);
-    }
-    
-    int query(int s_node, int d_node) {
-        int ret = max_segment_tree.MEANINGLESS;
-        while (h_node[s_node] ^ h_node[d_node]) {
-            if (cnt[h_node[s_node]] > cnt[h_node[d_node]])
-                swap(s_node, d_node);
-            ret = max(ret, max_segment_tree.query(1, 1, size-1, f[s_node], f[h_node[s_node]]));
-            s_node = p_node[h_node[s_node]];
+    ll query(int s, int d) {
+        if (h[s] == h[d]) {
+            if (f[s] > f[d]) swap(s, d);
+            return st.query(1, 1, size-1, f[s], f[d]-1);
         }
-        // h_node is s_node and d_node's LCA
-        if (cnt[s_node] > cnt[d_node])
-            swap(s_node, d_node);
-        // s_node is lower level than d_node
-        ret = max(ret, max_segment_tree.query(1, 1, size-1, f[s_node], f[d_node]-1));
-        return ret;
+        if (c[h[s]] > c[h[d]]) swap(s, d);
+        return query(s, h[s]) + e[h[s]].w + query(p[h[s]], d);
     }
 };
 
-int main() {
-    
+int main(int argc, const char * argv[]) {
     int N, M;
     scanf("%d", &N);
-    HeavyLightDecomposition hld(N);
+    HLD hld(N+1);
     for (int i = 1; i < N; ++i) {
-        int a, b, w;
-        scanf("%d%d%d", &a, &b, &w);
-        hld.edges[i] = {a, b, w};
-        hld.adj[a].push_back(b);
-        hld.adj[b].push_back(a);
+        int u, v, w;
+        scanf("%d%d%d", &u, &v, &w);
+        hld.e[i] = {u, v, w};
+        hld.adj[u].push_back(v);
+        hld.adj[v].push_back(u);
     }
     
-    hld.traverse1(1, 0);
-    hld.traverse2(1, 0);
+    hld.traverse1(1);
+    hld.traverse2(1);
     hld.init();
     
     scanf("%d", &M);
-    for (int i = 0; i < M; ++i) {
-        int cmd;
-        scanf("%d", &cmd);
-        if (cmd == 1) {
-            int idx, val;
-            scanf("%d%d", &idx, &val);
-            hld.update(idx, val);
-        } else if (cmd == 2) {
-            int s_node, d_node;
-            scanf("%d%d", &s_node, &d_node);
-            printf("%d\n", hld.query(s_node, d_node));
-        }
+    for (; M--;) {
+        int s, d;
+        scanf("%d%d", &s, &d);
+        printf("%lld\n", hld.query(s, d));
     }
-    
     return 0;
 }
