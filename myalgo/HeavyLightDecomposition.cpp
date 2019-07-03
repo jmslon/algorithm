@@ -102,14 +102,24 @@ struct HLD {
         sort(e.begin(), e.end());
     }
     
-    ll query(int s, int d) {
+    ll query_recursion(int s, int d) {
         if (h[s] == h[d]) {
             if (f[s] > f[d]) swap(s, d);
             return st.query(1, 1, size-1, f[s], f[d]-1);
         }
         if (c[h[s]] > c[h[d]]) swap(s, d);
-//        return query(s, h[s]) + query(p[h[s]], d) + e[h[s]].w;
-        return query(s, h[s]) + query(p[h[s]], d) + st.query(1, 1, size-1, f[h[s]], f[h[s]]);
+        return query_recursion(s, h[s]) + query_recursion(p[h[s]], d) + e[h[s]].w;
+    }
+    
+    ll query_iteration(int s, int d) {
+        ll ret = 0;
+        while (h[s] ^ h[d]) {
+            if (c[h[s]] > c[h[d]]) swap(s, d);
+            ret += st.query(1, 1, size-1, f[s], f[h[s]]);
+            s = p[h[s]];
+        }
+        if (f[s] > f[d]) swap(s, d);
+        return ret += st.query(1, 1, size-1, f[s], f[d]-1);
     }
 };
 
@@ -133,7 +143,7 @@ int main(int argc, const char * argv[]) {
     for (; M--;) {
         int s, d;
         scanf("%d%d", &s, &d);
-        printf("%lld\n", hld.query(s, d));
+        printf("%lld\n", hld.query_iteration(s, d));
     }
     return 0;
 }
