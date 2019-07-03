@@ -108,7 +108,8 @@ struct HLD {
             return st.query(1, 1, size-1, f[s], f[d]-1);
         }
         if (c[h[s]] > c[h[d]]) swap(s, d);
-        return query(s, h[s]) + e[h[s]].w + query(p[h[s]], d);
+//        return query(s, h[s]) + query(p[h[s]], d) + e[h[s]].w;
+        return query(s, h[s]) + query(p[h[s]], d) + st.query(1, 1, size-1, f[h[s]], f[h[s]]);
     }
 };
 
