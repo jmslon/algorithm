@@ -8,76 +8,106 @@
 
 using namespace std;
 
-// boj 3392.cpp
-// Plane Sweeping
+typedef long long ll;
 
-class Line {
-public:
-    int x, y1, y2, z;
+struct Line {
+    int x1, x2, y, dif;
 };
 
-class PlaneSweeping {
-public:
+struct MinSegmentTree {
+    int size;
     vector<Line> lines;
-    vector<long long> arr, tree, cnt;
-    
-    PlaneSweeping(int N) {
-        lines.resize(N*2);
+    vector<ll> arr, tree, lazy;
+    MinSegmentTree(int size) {
+        lines.resize(size<<1);
     }
     
-    void init() {
-        sort(lines.begin(), lines.end(), [] (Line a, Line b) {
-            return a.x == b.x ? b.z < a.z : a.x < b.x;
+    ll update_range(int node, int begin, int end, int l_pos, int r_pos, int dif) {
+        propagate(node, begin, end, lazy[node]);
+        lazy[node] = 0;
+        if (end < l_pos || r_pos < begin) return tree[node];
+        if (l_pos <= begin && end <= r_pos) {
+            propagate(node, begin, end, dif);
+            return tree[node];
+        }
+        ll l_update = update_range(l_node, begin, mid, l_pos, r_pos, dif);
+        ll r_update = update_range(r_node, mid+1, end, l_pos, r_pos, dif);
+        return tree[node] = l_update < r_update ? l_update : r_update;
+    }
+    
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        propagate(node, begin, end, lazy[node]);
+        lazy[node] = 0;
+        if (tree[node]) return arr[end+1] - arr[begin];
+        if (begin == end) return 0;
+        ll l_query = query(l_node, begin, mid, l_pos, r_pos);
+        ll r_query = query(r_node, mid+1, end, l_pos, r_pos);
+        return l_query + r_query;
+    }
+    
+    void propagate(int node, int begin, int end, ll dif) {
+        if (dif == 0) return;
+        tree[node] += dif;
+        if (begin ^ end) {
+            lazy[l_node] += dif;
+            lazy[r_node] += dif;
+        }
+    }
+    
+    void sort_lines() {
+        sort(lines.begin(), lines.end(), [] (Line &a, Line &b) {
+            return a.y == b.y ? b.dif < a.dif : a.y < b.y;
         });
+    }
+    
+    void grid_compress() {
+        // 1. build arr.
+        for (int i = 0; i < lines.size(); ++i) {
+            arr.push_back(lines[i].x1);
+            arr.push_back(lines[i].x2);
+        }
+        
+        // 2. sort arr and erase duplicated elements.
         sort(arr.begin(), arr.end());
         arr.erase(unique(arr.begin(), arr.end()), arr.end());
-        tree.resize(arr.size()*4);
-        cnt.resize(arr.size()*4);
+        
+        // 3. resize tree and lazy.
+        size = (int) arr.size();
+        tree.resize(size<<2);
+        lazy.resize(size<<2);
     }
     
-    int posof(int val) {
-        return (int) (lower_bound(arr.begin(), arr.end(), val) - arr.begin());
-    }
-    
-    long long area() {
-        long long ret = 0;
-        for (int i = 0; i < lines.size() - 1; ++i) {
-            update_range(1, 0, (int) arr.size()-2, posof(lines[i].y1), posof(lines[i].y2)-1, lines[i].z);
-            ret += (long long) ((lines[i+1].x - lines[i].x) * tree[1]);
+    ll area() {
+        ll ret = 0;
+        for (int i = 0; i < lines.size()-1; ++i) {
+            int l_pos = posof(lines[i].x1);
+            int r_pos = posof(lines[i].x2)-1;
+            int dif = lines[i].dif;
+            update_range(1, 0, size-2, l_pos, r_pos, dif);
+            ret += (ll) query(1, 0, size-2, l_pos, r_pos)*(lines[i+1].y - lines[i].y);
         }
         return ret;
     }
     
-    void update_range(int node, int begin, int end, int l_pos, int r_pos, int val) {
-        if (end < l_pos || r_pos < begin) return;
-        if (l_pos <= begin && end <= r_pos) cnt[node] += val;
-        else {
-            update_range(l_node, begin, mid, l_pos, r_pos, val);
-            update_range(r_node, mid+1, end, l_pos, r_pos, val);
-        }
-        if (cnt[node]) tree[node] = arr[end+1] - arr[begin];
-        else {
-            if (begin == end) tree[node] = 0;
-            else tree[node] = tree[l_node] + tree[r_node];
-        }
+    int posof(int val) {
+        return (int)(lower_bound(arr.begin(),arr.end(),val)-arr.begin());
     }
 };
 
 int main() {
     int N;
     scanf("%d", &N);
-    PlaneSweeping plane_sweeping(N);
-    
-    for (int i = 0, x1, x2, y1, y2; i < N; ++i) {
+    MinSegmentTree plane(N);
+    for (int i = 0; i < N; ++i) {
+        int x1, y1, x2, y2;
         scanf("%d%d%d%d", &x1, &y1, &x2, &y2);
-        plane_sweeping.lines[i] = {x1, y1, y2, 1};
-        plane_sweeping.lines[i+N] = {x2, y1, y2, -1};
-        plane_sweeping.arr.push_back(y1);
-        plane_sweeping.arr.push_back(y2);
+        plane.lines[i] = {x1, x2, y1, 1};
+        plane.lines[i+N] = {x1, x2, y2, -1};
     }
-    
-    plane_sweeping.init();
-    printf("%lld\n", plane_sweeping.area());
+    plane.sort_lines();
+    plane.grid_compress();
+    printf("%lld\n", plane.area());
     
     return 0;
 }
+
