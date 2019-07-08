@@ -19,7 +19,6 @@ typedef int ll;
 
 struct SegmentTree {
     vector<ll> tree, lazy;
-    int MEANINGLESS;
     
     SegmentTree(int size) {
         tree.resize(size<<2);
@@ -50,6 +49,7 @@ struct SegmentTree {
     }
     
     void propagate(int node, int begin, int end, ll dif) {
+        if (dif == 0) return;
         tree[node] += (end + 1 - begin) * dif;
         if (begin ^ end) {
             lazy[l_node] += dif;
