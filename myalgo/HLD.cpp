@@ -1,8 +1,6 @@
 /*
- boj.1761.cpp
- Heavy-Light Decomposition using Sum Segment Tree.
+ Heavy-Light Decomposition
  */
-
 
 #include <cstdio>
 #include <vector>
@@ -18,11 +16,6 @@ using namespace std;
 
 struct SegmentTree {
     vector<ll> tree;
-    
-    SegmentTree(int size) {
-        tree.resize(size<<2);
-    }
-    
     ll update(int node, int begin, int end, int pos, ll val) {
         if (pos < begin || end < pos) return tree[node];
         if (begin == end) return tree[node] = val;
@@ -30,7 +23,6 @@ struct SegmentTree {
         ll r_update = update(r_node, mid+1, end, pos, val);
         return tree[node] = l_update + r_update;
     }
-    
     ll query(int node, int begin, int end, int l_pos, int r_pos) {
         if (r_pos < begin || end < l_pos) return 0;
         if (l_pos <= begin && end <= r_pos) return tree[node];
@@ -54,7 +46,7 @@ struct HLD {
     vector<vector<int> > adj;
     SegmentTree st;
     
-    HLD(int size) : st(size-1) {
+    HLD(int size) {
         // size == N+1
         // this->size == N
         e.resize(size);
@@ -63,6 +55,7 @@ struct HLD {
         p.resize(size);
         f.resize(size);
         adj.resize(size);
+        st.tree.resize(size<<2);
     }
     
     int traverse1(int root) {
@@ -95,55 +88,45 @@ struct HLD {
     
     void init() {
         for (int i = 1; i < size; ++i) {
-            if (p[e[i].p] == e[i].c)
-                swap(e[i].c, e[i].p);
+            if (p[e[i].p] == e[i].c) swap(e[i].c, e[i].p);
             st.update(1, 1, size-1, f[e[i].c], e[i].w);
         }
         sort(e.begin(), e.end());
     }
     
-    ll query_recursion(int s, int d) {
-        if (h[s] == h[d]) {
-            if (f[s] > f[d]) swap(s, d);
-            return st.query(1, 1, size-1, f[s], f[d]-1);
-        }
-        if (c[h[s]] > c[h[d]]) swap(s, d);
-        return query_recursion(s, h[s]) + query_recursion(p[h[s]], d) + e[h[s]].w;
+    ll query(int s, int d) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) return st.query(1, 1, size-1, f[s], f[d]-1);
+        return query(s, h[s]) + query(p[h[s]], d) + e[h[s]].w;
     }
     
-    ll query_iteration(int s, int d) {
-        ll ret = 0;
-        while (h[s] ^ h[d]) {
-            if (c[h[s]] > c[h[d]]) swap(s, d);
-            ret += st.query(1, 1, size-1, f[s], f[h[s]]);
-            s = p[h[s]];
-        }
+    int lca(int s, int d) {
         if (f[s] > f[d]) swap(s, d);
-        return ret += st.query(1, 1, size-1, f[s], f[d]-1);
+        if (h[s] == h[d]) return d;
+        return lca(p[h[s]], d);
     }
 };
 
+
 int main(int argc, const char * argv[]) {
-    int N, M;
+    int N, K;
     scanf("%d", &N);
     HLD hld(N+1);
     for (int i = 1; i < N; ++i) {
-        int u, v, w;
-        scanf("%d%d%d", &u, &v, &w);
-        hld.e[i] = {u, v, w};
-        hld.adj[u].push_back(v);
-        hld.adj[v].push_back(u);
+        int a, b;
+        scanf("%d%d", &a, &b);
+        hld.adj[a].push_back(b);
+        hld.adj[b].push_back(a);
     }
     
     hld.traverse1(1);
     hld.traverse2(1);
-    hld.init();
     
-    scanf("%d", &M);
-    for (; M--;) {
+    scanf("%d", &K);
+    for (; K--;) {
         int s, d;
         scanf("%d%d", &s, &d);
-        printf("%lld\n", hld.query_iteration(s, d));
+        printf("%d\n", hld.lca(s, d));
     }
     return 0;
 }
