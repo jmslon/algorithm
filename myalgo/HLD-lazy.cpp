@@ -112,7 +112,7 @@ struct HLD {
     ll query(int s, int d) {
         if (f[s] > f[d]) swap(s, d);
         if (h[s] == h[d]) return st.query(1, 1, size, f[s], f[d]);
-        ll l = query(s, p[h[s]]);
+        ll l = query(s, h[s]);
         ll r = query(p[h[s]], d);
         return (l + r) % MOD;
     }
@@ -178,3 +178,4 @@ int main() {
     
     return 0;
 }
+
