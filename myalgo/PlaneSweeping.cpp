@@ -18,63 +18,66 @@ using namespace std;
 typedef long long ll;
 
 struct Line {
-    int x, y1, y2, dif;
+    int x1, x2, y, dif;
 };
 
-struct Plane {
-    int size;
+struct SegmentTree {
+    vector<ll> x, tree, cnt;
+    void update(int node, int begin, int end, int l_pos, int r_pos, int dif) {
+        if (r_pos < begin || end < l_pos) return;
+        if (l_pos <= begin && end <= r_pos) cnt[node] += dif;
+        else {
+            update(l_node, begin, mid, l_pos, r_pos, dif);
+            update(r_node, mid+1, end, l_pos, r_pos, dif);
+        }
+        if (cnt[node]) tree[node] = x[end+1]-x[begin];
+        else if (begin == end) tree[node] = 0;
+        else tree[node] = tree[l_node] + tree[r_node];
+    }
+};
+
+struct Plane: SegmentTree {
+    int size; // size after compress
     vector<Line> lines;
-    vector<ll> arr, tree, lazy;
     Plane(int size) {
         lines.resize(size<<1);
-        arr.resize(size<<1);
+        x.resize(size<<1);
     }
     
-    void sort_lines() {
+    void sort_lines() { // for sweeping
         sort(lines.begin(), lines.end(), [] (Line &a, Line &b) {
-            return a.x == b.x ? b.dif < a.dif : a.x < b.x;
+            return a.y == b.y ? b.dif < a.dif : a.y < b.y;
         });
     }
     
     void grid_compress() {
-        sort(arr.begin(), arr.end());
-        arr.erase(unique(arr.begin(), arr.end()), arr.end());
-    }
-    
-    void init() {
-        size = (int) arr.size();
-        tree.resize(size<<2);
-        lazy.resize(size<<2);
-    }
-    
-    void update_range(int node, int begin, int end, int l_pos, int r_pos, int dif) {
-        if (end < l_pos || r_pos < begin) return;
-        if (l_pos <= begin && end <= r_pos) lazy[node] += dif;
-        else {
-            update_range(l_node, begin, mid, l_pos, r_pos, dif);
-            update_range(r_node, mid+1, end, l_pos, r_pos, dif);
+        
+        // 1. build arr
+        // 입력시 했으므로 이 단계는 생략.
+        
+        // 2. sort and erase duplicated elements
+        sort(x.begin(), x.end());
+        x.erase(unique(x.begin(), x.end()), x.end());
+        
+        // 3. copy
+        for (int i = 0; i < lines.size(); ++i) {
+            lines[i].x1 = (int)(lower_bound(x.begin(),x.end(),lines[i].x1)-x.begin());
+            lines[i].x2 = (int)(lower_bound(x.begin(),x.end(),lines[i].x2)-x.begin());
         }
-        if (lazy[node]) tree[node] = arr[end+1] - arr[begin];
-        else if (begin == end) tree[node] = 0;
-        else tree[node] = tree[l_node] + tree[r_node];
+        
+        // 4. resize tree
+        size = (int) x.size();
+        tree.resize(size<<2);
+        cnt.resize(size<<2);
     }
     
     ll area() {
         ll ret = 0;
-        
         for (int i = 0; i < lines.size()-1; ++i) {
-            int l_pos = posof(lines[i].y1);
-            int r_pos = posof(lines[i].y2)-1;
-            int dif = lines[i].dif;
-            update_range(1, 0, size-2, l_pos, r_pos, dif);
-            ret += (ll) tree[1] * (lines[i+1].x - lines[i].x);
+            update(1, 0, size-2, lines[i].x1, lines[i].x2-1, lines[i].dif);
+            ret += (ll) tree[1] * (lines[i+1].y - lines[i].y);
         }
-        
         return ret;
-    }
-    
-    int posof(int val) {
-        return (int)(lower_bound(arr.begin(),arr.end(),val)-arr.begin());
     }
 };
 
@@ -85,18 +88,14 @@ int main() {
     for (int i = 0; i < N; ++i) {
         int x1, x2, y1, y2;
         scanf("%d%d%d%d", &x1, &x2, &y1, &y2);
-        plane.lines[i] = {x1, y1, y2, 1};
-        plane.lines[i+N] = {x2, y1, y2, -1};
-        plane.arr[i] = y1;
-        plane.arr[i+N] = y2;
+        plane.lines[i] = {x1, x2, y1, 1};
+        plane.lines[i+N] = {x1, x2, y2, -1};
+        plane.x[i] = x1;
+        plane.x[i+N] = x2;
     }
-    
     plane.sort_lines();
     plane.grid_compress();
-    plane.init();
-    
     printf("%lld\n", plane.area());
     
     return 0;
 }
-
