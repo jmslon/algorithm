@@ -36,15 +36,17 @@ struct SegmentTree {
     }
 };
 
-struct Plane: SegmentTree {
+struct Plane {
     int size; // size after compress
     vector<Line> lines;
+    vector<ll> x;
+    SegmentTree st;
     Plane(int size) {
         lines.resize(size<<1);
         x.resize(size<<1);
     }
     
-    void sort_lines() {
+    void sort_lines() { // for sweeping
         sort(lines.begin(), lines.end(), [] (Line &a, Line &b) {
             return a.y == b.y ? b.dif < a.dif : a.y < b.y;
         });
@@ -64,18 +66,19 @@ struct Plane: SegmentTree {
             lines[i].x1 = (int)(lower_bound(x.begin(),x.end(),lines[i].x1)-x.begin());
             lines[i].x2 = (int)(lower_bound(x.begin(),x.end(),lines[i].x2)-x.begin());
         }
+        st.x = x;
         
         // 4. resize tree
         size = (int) x.size();
-        tree.resize(size<<2);
-        cnt.resize(size<<2);
+        st.tree.resize(size<<2);
+        st.cnt.resize(size<<2);
     }
     
     ll area() {
         ll ret = 0;
         for (int i = 0; i < lines.size()-1; ++i) {
-            update(1, 0, size-2, lines[i].x1, lines[i].x2-1, lines[i].dif);
-            ret += (ll) tree[1] * (lines[i+1].y - lines[i].y);
+            st.update(1, 0, size-2, lines[i].x1, lines[i].x2-1, lines[i].dif);
+            ret += (ll) st.tree[1] * (lines[i+1].y - lines[i].y);
         }
         return ret;
     }
@@ -99,4 +102,3 @@ int main() {
     
     return 0;
 }
-
