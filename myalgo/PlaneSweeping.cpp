@@ -1,11 +1,5 @@
-/*
- boj.7626.cpp
- Plane Sweeping
- Segment Tree
- Grid Compression
- */
-
 #include <cstdio>
+#include <cstdlib>
 #include <vector>
 #include <algorithm>
 
@@ -15,70 +9,77 @@
 
 using namespace std;
 
-typedef long long ll;
-
-struct Line {
-    int x1, x2, y, dif;
-};
+typedef int ll;
 
 struct SegmentTree {
-    vector<ll> x, tree, cnt;
-    void update(int node, int begin, int end, int l_pos, int r_pos, int dif) {
+    vector<ll> arr, tree, cnt;
+    void update(int node, int begin, int end, int l_pos, int r_pos, ll dif) {
         if (r_pos < begin || end < l_pos) return;
         if (l_pos <= begin && end <= r_pos) cnt[node] += dif;
         else {
             update(l_node, begin, mid, l_pos, r_pos, dif);
             update(r_node, mid+1, end, l_pos, r_pos, dif);
         }
-        if (cnt[node]) tree[node] = x[end+1]-x[begin];
+        if (cnt[node]) tree[node] =  arr[end+1] - arr[begin];
         else if (begin == end) tree[node] = 0;
         else tree[node] = tree[l_node] + tree[r_node];
     }
 };
 
+struct Line {
+    int from, to, height;
+    ll dif;
+    bool operator < (const Line &r) const {
+        return height == r.height ? dif > r.dif : height < r.height;
+    }
+};
+
 struct Plane {
-    int size; // size after compress
-    vector<Line> lines;
-    vector<ll> x;
+    int size;
     SegmentTree st;
-    Plane(int size) {
-        lines.resize(size<<1);
-        x.resize(size<<1);
+    vector<Line> lines;
+    vector<int> arr;
+
+    void sort_lines() {
+        sort(lines.begin(), lines.end());
     }
-    
-    void sort_lines() { // for sweeping
-        sort(lines.begin(), lines.end(), [] (Line &a, Line &b) {
-            return a.y == b.y ? b.dif < a.dif : a.y < b.y;
-        });
-    }
-    
-    void grid_compress() {
-        
-        // 1. build arr
-        // 입력시 했으므로 이 단계는 생략.
-        
-        // 2. sort and erase duplicated elements
-        sort(x.begin(), x.end());
-        x.erase(unique(x.begin(), x.end()), x.end());
-        
+
+    void compress() {
+        // 1. build (done)
+        // 2. sort & erase
+        sort(arr.begin(), arr.end());
+        arr.erase(unique(arr.begin(), arr.end()), arr.end());
+
         // 3. copy
         for (int i = 0; i < lines.size(); ++i) {
-            lines[i].x1 = (int)(lower_bound(x.begin(),x.end(),lines[i].x1)-x.begin());
-            lines[i].x2 = (int)(lower_bound(x.begin(),x.end(),lines[i].x2)-x.begin());
+            lines[i].from = (int) (lower_bound(arr.begin(), arr.end(), lines[i].from) - arr.begin());
+            lines[i].to = (int) (lower_bound(arr.begin(), arr.end(), lines[i].to) - arr.begin());
         }
-        st.x = x;
+        st.arr = arr;
         
-        // 4. resize tree
-        size = (int) x.size();
+        // 4. resize
+        size = (int) arr.size();
         st.tree.resize(size<<2);
         st.cnt.resize(size<<2);
+    }
+    
+    ll perimeter() {
+        ll ret = 0;
+        ll prev = 0;
+        for (int i = 0; i < lines.size(); ++i) {
+            st.update(1, 0, size-2, lines[i].from, lines[i].to-1, lines[i].dif);
+            ll curr = st.tree[1];
+            ret += abs(curr - prev);
+            prev = curr;
+        }
+        return ret;
     }
     
     ll area() {
         ll ret = 0;
         for (int i = 0; i < lines.size()-1; ++i) {
-            st.update(1, 0, size-2, lines[i].x1, lines[i].x2-1, lines[i].dif);
-            ret += (ll) st.tree[1] * (lines[i+1].y - lines[i].y);
+            st.update(1, 0, size-2, lines[i].from, lines[i].to-1, lines[i].dif);
+            ret += (ll) st.tree[1] * (lines[i+1].height - lines[i].height);
         }
         return ret;
     }
@@ -87,18 +88,27 @@ struct Plane {
 int main() {
     int N;
     scanf("%d", &N);
-    Plane plane(N);
+    Plane plane1, plane2;
     for (int i = 0; i < N; ++i) {
-        int x1, x2, y1, y2;
-        scanf("%d%d%d%d", &x1, &x2, &y1, &y2);
-        plane.lines[i] = {x1, x2, y1, 1};
-        plane.lines[i+N] = {x1, x2, y2, -1};
-        plane.x[i] = x1;
-        plane.x[i+N] = x2;
+        int x1, y1, x2, y2;
+        scanf("%d%d%d%d", &x1, &y1, &x2, &y2);
+        if (x1 > x2) swap(x1, x2);
+        if (y1 > y2) swap(y1, y2);
+        plane1.lines.push_back({x1, x2, y1, 1});
+        plane1.lines.push_back({x1, x2, y2, -1});
+        plane2.lines.push_back({y1, y2, x1, 1});
+        plane2.lines.push_back({y1, y2, x2, -1});
+        plane1.arr.push_back(x1);
+        plane1.arr.push_back(x2);
+        plane2.arr.push_back(y1);
+        plane2.arr.push_back(y2);
     }
-    plane.sort_lines();
-    plane.grid_compress();
-    printf("%lld\n", plane.area());
+    plane1.sort_lines();
+    plane2.sort_lines();
+    plane1.compress();
+    plane2.compress();
+    printf("%d\n", plane1.perimeter() + plane2.perimeter());
+    if (plane1.area() ^ plane2.area()) printf("error");
     
     return 0;
 }
