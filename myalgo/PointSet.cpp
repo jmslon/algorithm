@@ -1,7 +1,7 @@
 /*
-  Farest points pair, Closest points pair
-  Convex Hull, Graham Scan, Line Sweeping. 
-*/
+ Farest points pair, Closest points pair
+ Graham Scan, Line Sweeping.
+ */
 
 #include <cstdio>
 #include <cmath>
@@ -72,7 +72,7 @@ struct FarestPair : public PointSet {
             P[i] = P[i] + O;
     }
     
-    void convex_hull() {
+    void graham_scan() {
         cvx = {O};
         for (int i = 1; i < size; ++i) {
             while (1) {
@@ -85,7 +85,7 @@ struct FarestPair : public PointSet {
         }
     }
     
-    void graham_scan() {
+    void rotating_calipers() {
         ll max = 0;
         Vector A, B;
         for (int i = 0, j = 1; i < cvx.size(); ++i) {
@@ -115,7 +115,7 @@ struct ClosestPair : public PointSet {
         });
     }
     
-    void get_closest_pair() {
+    void sweeping() {
         set<Vector> SET = {P[0], P[1]};
         Vector A = P[0], B = P[1];
         ll min = (A-B).size2();
