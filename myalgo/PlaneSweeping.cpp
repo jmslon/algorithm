@@ -26,49 +26,46 @@ struct SegmentTree {
     }
 };
 
+struct Grid {
+    int size;
+    vector<ll> arr;
+    SegmentTree st;
+    void compress() {
+        sort(arr.begin(), arr.end());
+        arr.erase(unique(arr.begin(), arr.end()), arr.end());
+        st.arr = arr;
+        size = (int) arr.size();
+        st.tree.resize(size<<2);
+        st.cnt.resize(size<<2);
+    }
+    void update(int l_pos, int r_pos, ll dif) {
+        l_pos = (int) (lower_bound(arr.begin(), arr.end(), l_pos) - arr.begin());
+        r_pos = (int) (lower_bound(arr.begin(), arr.end(), r_pos) - arr.begin()); // IMPORTANT!
+        st.update(1, 0, size-2, l_pos, r_pos-1, dif);
+    }
+};
+
 struct Line {
-    int from, to, height;
-    ll dif;
+    ll from, to, height, dif;
     bool operator < (const Line &r) const {
         return height == r.height ? dif > r.dif : height < r.height;
     }
 };
 
 struct Plane {
-    int size;
-    SegmentTree st;
     vector<Line> lines;
-    vector<int> arr;
-
+    Grid grid;
+    
     void sort_lines() {
         sort(lines.begin(), lines.end());
-    }
-
-    void compress() {
-        // 1. build (done)
-        // 2. sort & erase
-        sort(arr.begin(), arr.end());
-        arr.erase(unique(arr.begin(), arr.end()), arr.end());
-
-        // 3. copy
-        for (int i = 0; i < lines.size(); ++i) {
-            lines[i].from = (int) (lower_bound(arr.begin(), arr.end(), lines[i].from) - arr.begin());
-            lines[i].to = (int) (lower_bound(arr.begin(), arr.end(), lines[i].to) - arr.begin());
-        }
-        st.arr = arr;
-        
-        // 4. resize
-        size = (int) arr.size();
-        st.tree.resize(size<<2);
-        st.cnt.resize(size<<2);
     }
     
     ll perimeter() {
         ll ret = 0;
         ll prev = 0;
         for (int i = 0; i < lines.size(); ++i) {
-            st.update(1, 0, size-2, lines[i].from, lines[i].to-1, lines[i].dif);
-            ll curr = st.tree[1];
+            grid.update(lines[i].from, lines[i].to, lines[i].dif);
+            ll curr = grid.st.tree[1];
             ret += abs(curr - prev);
             prev = curr;
         }
@@ -78,8 +75,8 @@ struct Plane {
     ll area() {
         ll ret = 0;
         for (int i = 0; i < lines.size()-1; ++i) {
-            st.update(1, 0, size-2, lines[i].from, lines[i].to-1, lines[i].dif);
-            ret += (ll) st.tree[1] * (lines[i+1].height - lines[i].height);
+            grid.update(lines[i].from, lines[i].to, lines[i].dif);
+            ret += (ll) grid.st.tree[1] * (lines[i+1].height - lines[i].height);
         }
         return ret;
     }
@@ -98,15 +95,15 @@ int main() {
         plane1.lines.push_back({x1, x2, y2, -1});
         plane2.lines.push_back({y1, y2, x1, 1});
         plane2.lines.push_back({y1, y2, x2, -1});
-        plane1.arr.push_back(x1);
-        plane1.arr.push_back(x2);
-        plane2.arr.push_back(y1);
-        plane2.arr.push_back(y2);
+        plane1.grid.arr.push_back(x1);
+        plane1.grid.arr.push_back(x2);
+        plane2.grid.arr.push_back(y1);
+        plane2.grid.arr.push_back(y2);
     }
     plane1.sort_lines();
     plane2.sort_lines();
-    plane1.compress();
-    plane2.compress();
+    plane1.grid.compress();
+    plane2.grid.compress();
     printf("%d\n", plane1.perimeter() + plane2.perimeter());
     if (plane1.area() ^ plane2.area()) printf("error");
     
