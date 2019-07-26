@@ -32,12 +32,12 @@ public:
 
 struct PointSet{
     vector<Vector> P;
-//    unordered_map<ll, set<ll> > Q;
+    //    unordered_map<ll, set<ll> > Q;
     vector<set<ll> > Q;
     
     PointSet(int size) {
         P.reserve(size);
-        Q.resize(1+(GRID_SIZE<<1), set<ll>());
+        Q.resize(1+(GRID_SIZE<<1));
     }
     
     int count(Vector p) {return (int) Q[p.x].count(p.y);}
