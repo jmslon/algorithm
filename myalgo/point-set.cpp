@@ -13,8 +13,7 @@ using namespace std;
 
 typedef double ll;
 
-class Vector {
-public:
+struct Vector {
     ll x, y;
     Vector(){}
     Vector(ll _x, ll _y) : x(_x), y(_y) {}
@@ -28,7 +27,7 @@ public:
     
     ll dot      (const Vector& a)   const {return x*a.x+y*a.y;}
     ll cross    (const Vector& a)   const {return x*a.y-y*a.x;}
-    ll size     (void)              const {return sqrt(x*x+y*y);}
+    double size (void)              const {return sqrt(x*x+y*y);}
     ll size2    (void)              const {return x*x+y*y;}
     
     void print_info() {printf("(%.9lf, %.9lf)\n", x, y);}
