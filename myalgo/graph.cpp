@@ -10,6 +10,7 @@
 
 using namespace std;
 
+
 struct Edge {
     int src, dst, weight;
     bool operator > (const Edge &a) const {return weight > a.weight;} // for MIN_HEAP
@@ -20,7 +21,7 @@ struct Graph {
     int V;
     vector<unordered_map<int, Edge> > adj;
     Edge query(int s, int d) {
-        if (s == d) return {s, d, 0};
+//        if (s == d) return {s, d, 0};
         return adj[s].count(d) ? adj[s][d] : (Edge) {s, d, INF};
     }
     void update(int s, int d, int w) {
@@ -40,7 +41,7 @@ struct Dijkstra: Graph {
     auto dijkstra(int s) {
         vector<int> dist(V, INF);
         priority_queue<Edge, vector<Edge>, greater<Edge> > pq;
-        dist[s] = 0;
+        dist[s] = query(s, s).weight;
         pq.push({s, s, 0});
         for (;!pq.empty();) {
             auto curr = pq.top();
