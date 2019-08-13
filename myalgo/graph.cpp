@@ -21,7 +21,7 @@ struct Graph {
     int V;
     vector<unordered_map<int, Edge> > adj;
     Edge query(int s, int d) {
-//        if (s == d) return {s, d, 0};
+        if (s == d) return {s, d, 0};
         return adj[s].count(d) ? adj[s][d] : (Edge) {s, d, INF};
     }
     void update(int s, int d, int w) {
