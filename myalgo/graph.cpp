@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+using namespace std;
+
 struct Edge {
     int src, dst, weight;
     bool operator > (const Edge &a) const {return weight > a.weight;} // for MIN_HEAP
