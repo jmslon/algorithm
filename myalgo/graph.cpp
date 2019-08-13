@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+#define INF 0xfffffff
+
 using namespace std;
 
 struct Edge {
