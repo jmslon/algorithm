@@ -257,23 +257,3 @@ struct ClosestPair: PointSet {
         }
     }
 };
-
-struct BOJ2261 {
-    int N;
-    ClosestPair close = NULL;
-    
-    BOJ2261() {
-        cin >> N;
-        close = ClosestPair(N);
-        for (int i = 0; i < N; ++i) {
-            cin >> close.P[i].x >> close.P[i].y;
-        }
-    }
-    void solve() {
-        //close.sort_points();
-        //close.sweeping();
-        close.brute_force();
-        auto pairs = close.pairs;
-        cout << (pairs[0].first-pairs[0].second).size2() <<"\n";
-    }
-};
