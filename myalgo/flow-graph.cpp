@@ -76,24 +76,6 @@ struct Edmond: FlowGraph {
     }
 };
 
-struct BOJ6086 {
-    Edmond edmond = {52};
-    BOJ6086() {
-        int E;
-        cin >> E;
-        char u, v; int c;
-        for (int i = 0; i < E; ++i) {
-            cin >> u >> v >> c;
-            u = ctoi(u); v = ctoi(v);
-            edmond.push({u, v, 0, c}, {v, u, 0, c});
-        }
-    }
-    void solve() {
-        cout << edmond.maximum_flow(ctoi('A'), ctoi('Z')) << "\n";
-    }
-};
-
-
 struct Dinic: FlowGraph {
     int S, T;
     vector<int> dist, work;
