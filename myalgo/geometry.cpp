@@ -43,6 +43,32 @@ struct PointSet {
         P.push_back(A);
         P.push_back(B);
     }
+    
+    auto convex_hull() {
+        vector<Vector> hull;
+        
+        swap(P[0], *min_element(P.begin(), P.end()));
+        for (int i = 1; i < P.size(); ++i) P[i] = P[i] - P[0];
+        sort(P.begin()+1, P.end(), [] (const Vector &a, const Vector &b) {
+            ll cr = a.cross(b);
+            if (cr) return cr > 0;
+            return a.y + abs(a.x) < b.y + abs(b.x);
+        });
+        for (int i = 1; i < P.size(); ++i) P[i] = P[i] + P[0];
+        
+        hull = {P[0]};
+        for (int i = 1; i < P.size(); ++i) {
+            while (1) {
+                if (hull.size() <= 1) break;
+                Vector back1 = hull.back(), back2 = hull[hull.size()-2];
+                if ((back1-back2).cross(P[i]-back2) > 0) break;
+                hull.pop_back();
+            }
+            hull.push_back(P[i]);
+        }
+        
+        return hull;
+    }
 };
 
 struct LineSegment: PointSet {
@@ -96,31 +122,10 @@ struct ClosestPair: PointSet {
 };
 
 struct FarestPair: PointSet {
-    vector<Vector> hull;
-    vector<pair<Vector, Vector> > pairs;
-    
     FarestPair(int size): PointSet(size) {}
     
     auto farest_pairs() {
-        swap(P[0], *min_element(P.begin(), P.end()));
-        for (int i = 1; i < P.size(); ++i) P[i] = P[i] - P[0];
-        sort(P.begin()+1, P.end(), [] (const Vector &a, const Vector &b) {
-            ll cr = a.cross(b);
-            if (cr) return cr > 0;
-            return a.y + abs(a.x) < b.y + abs(b.x);
-        });
-        
-        for (int i = 1; i < P.size(); ++i) P[i] = P[i] + P[0];
-        hull = {P[0]};
-        for (int i = 1; i < P.size(); ++i) {
-            while (1) {
-                if (hull.size() <= 1) break;
-                Vector back1 = hull.back(), back2 = hull[hull.size()-2];
-                if ((back1-back2).cross(P[i]-back2) > 0) break;
-                hull.pop_back();
-            }
-            hull.push_back(P[i]);
-        }
+        auto hull = convex_hull();
         
         vector<PointSet> pairs = {{hull[0], hull[1]}};
         ll max = (hull[0]-hull[1]).size2();
@@ -195,6 +200,23 @@ struct Geometry {
         }
         return cn % 2;
     }
+    
+    static bool intersect(Polygon a, Polygon b) {
+        if (inside(a, b.P[0])) return 0;
+        if (inside(b, a.P[0])) return 0;
+        for (int i1 = 0; i1 < a.P.size(); ++i1) {
+            int j1 = (i1 + 1) % a.P.size();
+            Vector I1 = a.P[i1];
+            Vector J1 = a.P[j1];
+            for (int i2 = 0; i2 < b.P.size(); ++i2) {
+                int j2 = (i2 + 1) % b.P.size();
+                Vector I2 = b.P[i2];
+                Vector J2 = b.P[j2];
+                if (intersect({I1, J1}, {I2, J2})) return 0;
+            }
+        }
+        return 1;
+    }
 };
 
 struct BOJ1688 {
@@ -231,9 +253,8 @@ struct BOJ2261 {
     BOJ2261() {
         cin >> N;
         pointset = ClosestPair(N);
-        for (int i = 0; i < N; ++i) {
+        for (int i = 0; i < N; ++i)
             cin >> pointset.P[i].x >> pointset.P[i].y;
-        }
     }
     void solve() {
         auto pairs = pointset.closest_pairs();
@@ -260,10 +281,28 @@ struct BOJ10254 {
     }
 };
 
+struct BOJ3878 {
+    BOJ3878() {
+        int N, M;
+        cin >> N >> M;
+        PointSet black(N), white(M);
+        for (int i = 0; i < N; ++i)
+            cin >> black.P[i].x >> black.P[i].y;
+        for (int i = 0; i < M; ++i)
+            cin >> white.P[i].x >> white.P[i].y;
+        Polygon black_polygon = 0;
+        black_polygon.P = black.convex_hull();
+        Polygon white_polygon = 0;
+        white_polygon.P = white.convex_hull();
+        if (Geometry::intersect(black_polygon, white_polygon)) cout << "YES\n";
+        else cout << "NO\n";
+    }
+};
+
 int main() {
     ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
-    int T; cin >> T;
-    for (;T--;) {BOJ10254 p; p.solve();}
+//    int T; cin >> T; for (;T--;) {BOJ10254 p; p.solve();}
+    int T; cin >> T; for (;T--;) BOJ3878 p;
     return 0;
 }
 
