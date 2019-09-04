@@ -217,6 +217,15 @@ struct Geometry {
         }
         return 1;
     }
+    
+    static bool ontheline(LineSegment l, Vector p) {
+        if (l.P[0] == p) return 1;
+        if (l.P[1] == p) return 1;
+        if ((l.P[0]-p).cross(l.P[1]-p)) return 0;
+        if (l.P[1] < l.P[0]) swap(l.P[0], l.P[1]);
+        if (l.P[0] < p && p < l.P[1]) return 1;
+        return 0;
+    }
 };
 
 struct BOJ1688 {
