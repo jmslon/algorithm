@@ -169,9 +169,9 @@ struct Geometry {
             if (t1 != 0 || t2 != 0) return 0; // 평행
             if (a.P[0] < a.P[1]) swap(a.P[0], a.P[1]);
             if (b.P[0] < b.P[1]) swap(b.P[0], b.P[1]);
-            if (b.P[0] < a.P[1]) return 0; // 일부 겹침
-            if (a.P[0] < b.P[1]) return 0; // 일부 겹침
-            return 1; // 직선의 다른 부분
+            if (b.P[0] < a.P[1]) return 0; // 안 겹침
+            if (a.P[0] < b.P[1]) return 0; // 안 겹침
+            return 1; // 일부 겹침
         }
         if (det<0) {
             t1*=-1;
