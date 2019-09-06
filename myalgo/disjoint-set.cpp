@@ -16,7 +16,7 @@ struct DisjointSet{
         for(int i = 0; i < size ; ++i) par[i] = i;
     }
     
-    ll find(int x) {
+    int find(int x) {
         if (par[x] == x) return x;
         return par[x] = find(par[x]);
     }
