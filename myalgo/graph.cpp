@@ -11,7 +11,8 @@ typedef long long ll;
 
 struct Edge {
     int src, dst; ll cost; unsigned long key;
-    bool operator > (const Edge &a) const {return cost > a.cost;} // for MIN_HEAP
+    bool operator < (const Edge &a) const {return cost < a.cost;} // for MAX_HEAP
+    bool operator > (const Edge &a) const {return cost > a.cost;} // for MIN_HEAP (Dijkstra)
     Edge operator + (const Edge &a) const {return {src, a.dst, cost+a.cost};} // for Edge NEW
 };
 
