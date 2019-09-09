@@ -8,12 +8,14 @@
 
 using namespace std;
 
-struct Edge {
-    int src, dst; ll flw, cap;
-    ll residual() {return cap-flw;}
-};
+typedef int ll;
 
 struct FlowGraph {
+    struct Edge {
+        int src, dst; ll flw, cap;
+        ll residual() {return cap-flw;}
+    };
+    
     int V;
     vector<vector<unsigned long>> adj;
     vector<Edge> edges;
@@ -139,7 +141,7 @@ struct Edmond: FlowGraph {
                 }
             }
             if (par[t] == -1) break;
-            int flw = INF;
+            ll flw = INF;
             for (int i = t; i != s; i = par[i])
                 flw = min(flw, edges[path[i]].residual());
             for (int i = t; i != s; i = par[i]) {
@@ -182,4 +184,3 @@ int main(){
     BOJ11375 p; p.solve();
     return 0;
 }
-
