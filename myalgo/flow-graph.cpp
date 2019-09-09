@@ -36,46 +36,6 @@ struct FlowGraph {
     }
 };
 
-struct Edmond: FlowGraph {
-    Edmond(int size): FlowGraph(size) {}
-    int maximum_flow(int s, int t) {
-        int mf = 0;
-        while (1) {
-            vector<int> par(V, -1);
-            vector<unsigned long> path(V, 0);
-            //vector<int> dist(V, INF);
-            queue<int> q;
-            
-            //dist[s] = 0;
-            q.push(s);
-            while (!q.empty() && par[t] == -1) {
-                int curr = q.front();
-                q.pop();
-                for (auto idx: adj[curr]) {
-                    auto e = edges[idx];
-                    int next = e.dst;
-                    if (e.residual() > 0 && par[next] == -1) {
-                        q.push(next);
-                        par[next] = curr;
-                        path[next] = idx;
-                        //dist[next] = dist[curr] + 1;
-                        if (next == t) break;
-                    }
-                }
-            }
-            if (par[t] == -1) break;
-            int flw = INF;
-            for (int i = t; i != s; i = par[i])
-                flw = min(flw, edges[path[i]].residual());
-            for (int i = t; i != s; i = par[i]) {
-                flow(path[i], flw);
-            }
-            mf += flw;
-        }
-        return mf;
-    }
-};
-
 struct Dinic: FlowGraph {
     int S, T;
     vector<ll> dist, work;
@@ -148,6 +108,46 @@ struct Dinic: FlowGraph {
             }
         }
         return visit;
+    }
+};
+
+struct Edmond: FlowGraph {
+    Edmond(int size): FlowGraph(size) {}
+    int maximum_flow(int s, int t) {
+        int mf = 0;
+        while (1) {
+            vector<int> par(V, -1);
+            vector<unsigned long> path(V, 0);
+            //vector<int> dist(V, INF);
+            queue<int> q;
+            
+            //dist[s] = 0;
+            q.push(s);
+            while (!q.empty() && par[t] == -1) {
+                int curr = q.front();
+                q.pop();
+                for (auto idx: adj[curr]) {
+                    auto e = edges[idx];
+                    int next = e.dst;
+                    if (e.residual() > 0 && par[next] == -1) {
+                        q.push(next);
+                        par[next] = curr;
+                        path[next] = idx;
+                        //dist[next] = dist[curr] + 1;
+                        if (next == t) break;
+                    }
+                }
+            }
+            if (par[t] == -1) break;
+            int flw = INF;
+            for (int i = t; i != s; i = par[i])
+                flw = min(flw, edges[path[i]].residual());
+            for (int i = t; i != s; i = par[i]) {
+                flow(path[i], flw);
+            }
+            mf += flw;
+        }
+        return mf;
     }
 };
 
