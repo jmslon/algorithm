@@ -9,8 +9,8 @@
 using namespace std;
 
 struct Edge {
-    int src, dst, flw, cap;
-    int residual() {return cap-flw;}
+    int src, dst; ll flw, cap;
+    ll residual() {return cap-flw;}
 };
 
 struct FlowGraph {
@@ -30,7 +30,7 @@ struct FlowGraph {
         edges.push_back(e2);
     }
     
-    void flow(unsigned long idx, int flw) {
+    void flow(unsigned long idx, ll flw) {
         edges[idx].flw += flw;
         edges[idx%2?idx-1:idx+1].flw -= flw;
     }
@@ -78,7 +78,7 @@ struct Edmond: FlowGraph {
 
 struct Dinic: FlowGraph {
     int S, T;
-    vector<int> dist, work;
+    vector<ll> dist, work;
     
     Dinic(int size): FlowGraph(size) {}
     
@@ -101,15 +101,15 @@ struct Dinic: FlowGraph {
         return dist[T] != INF;
     }
     
-    int dfs(int curr, int flw) {
-        if(curr == T) return flw;
+    ll dfs(int curr, ll flw) {
+        if (curr == T) return flw;
         
         for(; work[curr] < adj[curr].size(); ++work[curr]) {
             auto idx = adj[curr][work[curr]];
             auto e = edges[idx];
             int next = e.dst;
             if (dist[next] == dist[curr] + 1 && e.residual() > 0) {
-                int df = dfs(next, min(e.residual(), flw));
+                ll df = dfs(next, min(e.residual(), flw));
                 if (df > 0){
                     flow(idx, df);
                     return df;
@@ -119,13 +119,13 @@ struct Dinic: FlowGraph {
         return 0;
     }
     
-    int maximum_flow(int s, int t) {
+    ll maximum_flow(int s, int t) {
         S = s; T = t;
-        int mf = 0;
+        ll mf = 0;
         while (bfs()) {
             work.clear(); work.resize(V, 0);
             while (1) {
-                int flow = dfs(S, INF);
+                ll flow = dfs(S, INF);
                 if (flow == 0) break;
                 mf += flow;
             }
