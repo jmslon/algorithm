@@ -77,7 +77,7 @@ struct Edmond: FlowGraph {
             for (int node = t; node != s; node = edges[key[node]].src)
                 flow(key[node], flw);
             
-            mc += flw * edges[key[node]].cost;
+            mc += flw * dist[t];
             mf += flw;
         }
         
