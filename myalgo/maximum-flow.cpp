@@ -50,9 +50,9 @@ struct Dinic: FlowGraph {
         
         queue<int> q;
         q.push(S);
-        while (!q.empty()){
+        while (!q.empty()) {
             int curr = q.front(); q.pop();
-            for(auto idx: adj[curr]){
+            for (auto idx: adj[curr]) {
                 int next = edges[idx].dst;
                 if (dist[next] == INF && edges[idx].residual() > 0) {
                     dist[next] = dist[curr] + 1;
@@ -66,13 +66,13 @@ struct Dinic: FlowGraph {
     ll dfs(int curr, ll flw) {
         if (curr == T) return flw;
         
-        for(; work[curr] < adj[curr].size(); ++work[curr]) {
+        for (; work[curr] < adj[curr].size(); ++work[curr]) {
             auto idx = adj[curr][work[curr]];
             auto e = edges[idx];
             int next = e.dst;
             if (dist[next] == dist[curr] + 1 && e.residual() > 0) {
                 ll df = dfs(next, min(e.residual(), flw));
-                if (df > 0){
+                if (df > 0) {
                     flow(idx, df);
                     return df;
                 }
