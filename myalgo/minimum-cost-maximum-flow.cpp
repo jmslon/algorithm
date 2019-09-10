@@ -74,10 +74,10 @@ struct Edmond: FlowGraph {
             ll flw = INF;
             for (int node = t; node != s; node = edges[key[node]].src)
                 flw = min(flw, edges[key[node]].residual());
-            for (int node = t; node != s; node = edges[key[node]].src) {
-                mc += flw * edges[key[node]].cost;
+            for (int node = t; node != s; node = edges[key[node]].src)
                 flow(key[node], flw);
-            }
+            
+            mc += flw * edges[key[node]].cost;
             mf += flw;
         }
         
