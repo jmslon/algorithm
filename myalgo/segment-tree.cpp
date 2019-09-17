@@ -1,12 +1,10 @@
-/*
- Segment Tree by value
- */
 #include <cstdio>
 #include <vector>
 
 #define mid ((begin+end)>>1)
 #define l_node (node<<1)
 #define r_node (l_node+1)
+#define INF 0x7fffffff
 
 typedef long long ll;
 
@@ -49,30 +47,99 @@ struct SegmentTree {
     virtual ll whichof(ll l, ll r) = 0;
 };
 
-struct MaxSegmentTree : public SegmentTree {
-    MaxSegmentTree(int size) : SegmentTree(size) {
-        MEANINGLESS = 0xffffffffffffffff;
+struct MaxSegmentTree {
+    vector<ll> arr, tree;
+    
+    MaxSegmentTree(int size) {
+        arr.resize(size);
+        tree.resize(size<<2);
     }
-    virtual ll whichof(ll l, ll r) {
-        return l > r ? l : r;
+    
+    ll init(int node, int begin, int end) {
+        if (begin == end) return tree[node] = arr[begin];
+        ll l = init(l_node, begin, mid);
+        ll r = init(r_node, mid+1, end);
+        return tree[node] = l>r?l:r;
+    }
+    
+    ll update(int node, int begin, int end, int pos, ll val) {
+        if (pos < begin || end < pos) return tree[node];
+        if (begin == end) return tree[node] = val;
+        ll l = update(l_node, begin, mid, pos, val);
+        ll r = update(r_node, mid+1, end, pos, val);
+        return tree[node] = l>r?l:r;
+    }
+    
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        if (r_pos < begin || end < l_pos) return 0;
+        if (l_pos <= begin && end <= r_pos) return tree[node];
+        ll l = query(l_node, begin, mid, l_pos, r_pos);
+        ll r = query(r_node, mid+1, end, l_pos, r_pos);
+        return l>r?l:r;
     }
 };
 
-struct MinSegmentTree : public SegmentTree {
-    MinSegmentTree(int size) : SegmentTree(size) {
-        MEANINGLESS = 0x7fffffffffffffff;
+struct MinSegmentTree {
+    vector<ll> arr, tree;
+    
+    MinSegmentTree(int size) {
+        arr.resize(size);
+        tree.resize(size<<2);
     }
-    virtual ll whichof(ll l, ll r) {
-        return l < r ? l : r;
+    
+    ll init(int node, int begin, int end) {
+        if (begin == end) return tree[node] = arr[begin];
+        ll l = init(l_node, begin, mid);
+        ll r = init(r_node, mid+1, end);
+        return tree[node] = l<r?l:r;
+    }
+    
+    ll update(int node, int begin, int end, int pos, ll val) {
+        if (pos < begin || end < pos) return tree[node];
+        if (begin == end) return tree[node] = val;
+        ll l = update(l_node, begin, mid, pos, val);
+        ll r = update(r_node, mid+1, end, pos, val);
+        return tree[node] = l<r?l:r;
+    }
+    
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        if (r_pos < begin || end < l_pos) return INF;
+        if (l_pos <= begin && end <= r_pos) return tree[node];
+        ll l = query(l_node, begin, mid, l_pos, r_pos);
+        ll r = query(r_node, mid+1, end, l_pos, r_pos);
+        return l<r?l:r;
     }
 };
 
-struct SumSegmentTree : public SegmentTree {
-    SumSegmentTree(int size) : SegmentTree(size) {
-        MEANINGLESS = 0;
+struct SumSegmentTree {
+    vector<ll> arr, tree;
+    
+    SumSegmentTree(int size) {
+        arr.resize(size);
+        tree.resize(size<<2);
     }
-    virtual ll whichof(ll l, ll r) {
-        return l + r;
+    
+    ll init(int node, int begin, int end) {
+        if (begin == end) return tree[node] = arr[begin];
+        ll l = init(l_node, begin, mid);
+        ll r = init(r_node, mid+1, end);
+        return tree[node] = l+r;
+    }
+    
+    ll update(int node, int begin, int end, int pos, ll val) {
+        if (pos < begin || end < pos) return tree[node];
+        if (begin == end) return tree[node] = val;
+        ll l = update(l_node, begin, mid, pos, val);
+        ll r = update(r_node, mid+1, end, pos, val);
+        return tree[node] = l+r;
+    }
+    
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        if (r_pos < begin || end < l_pos) return 0;
+        if (l_pos <= begin && end <= r_pos) return tree[node];
+        ll l = query(l_node, begin, mid, l_pos, r_pos);
+        ll r = query(r_node, mid+1, end, l_pos, r_pos);
+        return l+r;
     }
 };
 
