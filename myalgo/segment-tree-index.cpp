@@ -1,65 +1,72 @@
-/*
- Segment Tree by index
- */
 #include <cstdio>
 #include <vector>
 
 #define mid ((begin+end)>>1)
 #define l_node (node<<1)
 #define r_node (l_node+1)
+#define INF 0x7fffffff
 
 typedef long long ll;
 
 using namespace std;
 
-struct SegmentTree {
-    int size;
+struct MaxSegmentTree {
     vector<ll> arr, tree;
-    ll MEANINGLESS;
     
-    SegmentTree(int size) {
-        this->size = size;
+    MaxSegmentTree(int size) {
         arr.resize(size);
         tree.resize(size<<2);
     }
     
     ll init(int node, int begin, int end) {
         if (begin == end) return tree[node] = begin;
-        ll l_init = init(l_node, begin, mid);
-        ll r_init = init(r_node, mid+1, end);
-        return tree[node] = whichof(l_init, r_init);
+        ll l = init(l_node, begin, mid);
+        ll r = init(r_node, mid+1, end);
+        return tree[node] = whichof(l, r);
     }
     
     ll query(int node, int begin, int end, int l_pos, int r_pos) {
-        if (r_pos < begin || end < l_pos) return MEANINGLESS;
+        if (r_pos < begin || end < l_pos) return -1;
         if (l_pos <= begin && end <= r_pos) return tree[node];
-        ll l_query = query(l_node, begin, mid, l_pos, r_pos);
-        ll r_query = query(r_node, mid+1, end, l_pos, r_pos);
-        return whichof(l_query, r_query);
+        ll l = query(l_node, begin, mid, l_pos, r_pos);
+        ll r = query(r_node, mid+1, end, l_pos, r_pos);
+        return whichof(l, r);
     }
     
-    virtual ll whichof(ll l, ll r) = 0;
-};
-
-struct MaxSegmentTree : public SegmentTree {
-    MaxSegmentTree(int size) : SegmentTree(size) {
-        MEANINGLESS = -1;
-    }
-    virtual ll whichof(ll l, ll r) {
-        if (l == MEANINGLESS) return r;
-        if (r == MEANINGLESS) return l;
-        return arr[l] > arr[r] ? l : r;
+    ll whichof(ll l, ll r) {
+        if (l == -1) return r;
+        if (r == -1) return l;
+        return arr[l]>arr[r]?l:r;
     }
 };
 
-struct MinSegmentTree : public SegmentTree {
-    MinSegmentTree(int size) : SegmentTree(size) {
-        MEANINGLESS = 0x7fffffff;
+struct MinSegmentTree{
+    vector<ll> arr, tree;
+    
+    MinSegmentTree(int size) {
+        arr.resize(size);
+        tree.resize(size<<2);
     }
-    virtual ll whichof(ll l, ll r) {
-        if (l == MEANINGLESS) return r;
-        if (r == MEANINGLESS) return l;
-        return arr[l] < arr[r] ? l : r;
+    
+    ll init(int node, int begin, int end) {
+        if (begin == end) return tree[node] = begin;
+        ll l = init(l_node, begin, mid);
+        ll r = init(r_node, mid+1, end);
+        return tree[node] = whichof(l, r);
+    }
+    
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        if (r_pos < begin || end < l_pos) return INF;
+        if (l_pos <= begin && end <= r_pos) return tree[node];
+        ll l = query(l_node, begin, mid, l_pos, r_pos);
+        ll r = query(r_node, mid+1, end, l_pos, r_pos);
+        return whichof(l, r);
+    }
+    
+    ll whichof(ll l, ll r) {
+        if (l == INF) return r;
+        if (r == INF) return l;
+        return arr[l]<arr[r]?l:r;
     }
 };
 
