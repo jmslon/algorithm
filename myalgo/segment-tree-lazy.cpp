@@ -33,15 +33,6 @@ struct MaxSegmentTree { // Max Lazy
        return tree[node] = l>r?l:r;
    }
 
-   void propagate(int node, int begin, int end, ll dif) {
-       if (dif == 0) return;
-       tree[node] += dif;
-       if (begin ^ end) {
-           lazy[l_node] += dif;
-           lazy[r_node] += dif;
-       }
-   }
-
    ll query(int node, int begin, int end, int l_pos, int r_pos) {
        propagate(node, begin, end, lazy[node]);
        lazy[node] = 0;
@@ -50,6 +41,16 @@ struct MaxSegmentTree { // Max Lazy
        ll l = query(l_node, begin, mid, l_pos, r_pos);
        ll r = query(r_node, mid+1, end, l_pos, r_pos);
        return l>r?l:r;
+   }
+   
+private:
+   void propagate(int node, int begin, int end, ll dif) {
+       if (dif == 0) return;
+       tree[node] += dif;
+       if (begin ^ end) {
+           lazy[l_node] += dif;
+           lazy[r_node] += dif;
+       }
    }
 };
 
@@ -81,15 +82,6 @@ struct SumSegmentTree { // Sum Lazy
         return tree[node] = l+r;
     }
     
-    void propagate(int node, int begin, int end, ll dif) {
-        if (dif == 0) return;
-        tree[node] += (ll)(end-begin+1)*dif;
-        if (begin ^ end) {
-            lazy[l_node] += dif;
-            lazy[r_node] += dif;
-        }
-    }
-    
     ll query(int node, int begin, int end, int l_pos, int r_pos) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
@@ -98,6 +90,16 @@ struct SumSegmentTree { // Sum Lazy
         ll l = query(l_node, begin, mid, l_pos, r_pos);
         ll r = query(r_node, mid+1, end, l_pos, r_pos);
         return l+r;
+    }
+   
+private:
+    void propagate(int node, int begin, int end, ll dif) {
+        if (dif == 0) return;
+        tree[node] += (ll)(end-begin+1)*dif;
+        if (begin ^ end) {
+            lazy[l_node] += dif;
+            lazy[r_node] += dif;
+        }
     }
 };
 
