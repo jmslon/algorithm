@@ -23,14 +23,14 @@ struct CompressedSegmentTree { // min, grid compress
         tree.resize(arr.size()*4, INF);
     }
     
-    void update(int l_val, ll val) {
-        int l_pos = (int)(lower_bound(arr.begin(), arr.end(), l_val)-arr.begin());
+    void update(int l_pos, ll val) {
+        l_pos = (int) (lower_bound(arr.begin(), arr.end(), l_pos)-arr.begin());
         update(1, 0, (int)arr.size()-1, l_pos, val);
     }
     
-    ll query(int l_val, int r_val) {
-        int l_pos = (int)(lower_bound(arr.begin(), arr.end(), l_val)-arr.begin());
-        int r_pos = (int)(lower_bound(arr.begin(), arr.end(), r_val)-arr.begin());
+    ll query(int l_pos, int r_pos) {
+        l_pos = (int)(lower_bound(arr.begin(), arr.end(), l_pos)-arr.begin());
+        r_pos = (int)(lower_bound(arr.begin(), arr.end(), r_pos)-arr.begin());
         return query(1, 0, (int)arr.size()-1, l_pos, r_pos);
     }
     
