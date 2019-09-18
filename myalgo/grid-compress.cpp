@@ -14,7 +14,7 @@ using namespace std;
 
 typedef long long ll;
 
-struct CompressedSegmentTree { // Min, Compressed
+struct SegmentTree { // Min, Compressed
     vector<ll> arr, tree;
     
     void init() {
@@ -65,7 +65,7 @@ struct BOJ5480 {
         int N, K, L; cin >> N >> K >> L;
         vector<Ship> ships;
         vector<Laser> lasers;
-        CompressedSegmentTree treex, treey;
+        SegmentTree treex, treey;
         
         for (int i = 0; i < K; ++i) {
             int x1, y1, x2, y2, w; cin >> x1 >> y1 >> x2 >> y2 >> w;
@@ -103,7 +103,7 @@ struct BOJ5480 {
     }
 };
 
-struct MaxSegmentTree { // Max Lazy Compressed
+struct SegmentTree { // Max Lazy Compressed
     vector<ll> arr, tree, lazy;
     
     void init() {
@@ -178,7 +178,7 @@ struct BOJ8889 {
     BOJ8889() {
         int N; cin >> N;
         vector<Line> lines;
-        MaxSegmentTree seg_tree;
+        SegmentTree seg_tree;
         ll min_val = INF, max_val = 0;
         while (N--) {
             int n; cin >> n;
