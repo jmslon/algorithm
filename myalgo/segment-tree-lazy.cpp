@@ -54,6 +54,48 @@ private:
    }
 };
 
+struct MinSegmentTree { // Min Lazy
+    vector<ll> tree, lazy;
+    MinSegmentTree(int size, int val) {
+        tree.resize(size<<2);
+        lazy.resize(size<<2);
+        lazy[1] = val;
+    }
+    
+    ll update(int node, int begin, int end, int l_pos, int r_pos, ll dif) {
+        propagate(node, begin, end, lazy[node]);
+        lazy[node] = 0;
+        if (r_pos < begin || end < l_pos) return tree[node];
+        if (l_pos <= begin && end <= r_pos) {
+            propagate(node, begin, end, dif);
+            return tree[node];
+        }
+        ll l = update(l_node, begin, mid, l_pos, r_pos, dif);
+        ll r = update(r_node, mid+1, end, l_pos, r_pos, dif);
+        return tree[node] = l<r?l:r;
+    }
+    
+    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+        propagate(node, begin, end, lazy[node]);
+        lazy[node] = 0;
+        if (r_pos < begin || end < l_pos) return INF;
+        if (l_pos <= begin && end <= r_pos) return tree[node];
+        ll l = query(l_node, begin, mid, l_pos, r_pos);
+        ll r = query(r_node, mid+1, end, l_pos, r_pos);
+        return l<r?l:r;
+    }
+    
+private:
+    void propagate(int node, int begin, int end, ll dif) {
+        if (dif == 0) return;
+        tree[node] += dif;
+        if (begin ^ end) {
+            lazy[l_node] += dif;
+            lazy[r_node] += dif;
+        }
+    }
+};
+
 struct SumSegmentTree { // Sum Lazy
     vector<ll> arr, tree, lazy;
     SumSegmentTree(int size) {
