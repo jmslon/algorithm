@@ -208,7 +208,7 @@ struct BOJ8889 {
     }
 };
 
-struct SegmentTree { // Max Lazy Compressed
+struct SegmentTree { // Max Lazy Compressed (Not Plane)
     vector<ll> arr, tree, lazy;
     
     void init() {
@@ -296,16 +296,12 @@ struct BOJ16357 {
         ll answer = seg_tree.query(first, last);
         priority_queue<Node> pq;
         for (auto node: nodes) {
-            while (!pq.empty()) {
-                if (pq.top().dst < node.src) pq.pop();
-                else break;
-            }
+            while (!pq.empty()&&pq.top().dst<node.src) pq.pop();
             pq.push(node);
             seg_tree.update(node.src, node.dst, -1);
             answer = max(answer, (ll)pq.size()+seg_tree.query(first, last));
         }
         printf("%lld\n", answer);
-        
     }
 };
 
