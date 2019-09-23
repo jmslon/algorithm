@@ -107,26 +107,73 @@ struct HLD {
     }
 };
 
+// only lca version
+struct Graph {
+    vector<vector<int>> adj;
+    void push(int src, int dst) {
+        adj[src].push_back(dst);
+    }
+};
 
-int main(int argc, const char * argv[]) {
-    int N, K;
-    scanf("%d", &N);
-    HLD hld(N+1);
-    for (int i = 1; i < N; ++i) {
-        int a, b;
-        scanf("%d%d", &a, &b);
-        hld.adj[a].push_back(b);
-        hld.adj[b].push_back(a);
+struct HeavyLightDecomposition: Graph { 
+    int size = 0;
+    vector<int> c, h, p, f;
+    
+    HeavyLightDecomposition(int size) {
+        c.resize(size);
+        h.resize(size);
+        p.resize(size);
+        f.resize(size);
+        adj.resize(size);
     }
     
-    hld.traverse1(1);
-    hld.traverse2(1);
-    
-    scanf("%d", &K);
-    for (; K--;) {
-        int s, d;
-        scanf("%d%d", &s, &d);
-        printf("%d\n", hld.lca(s, d));
+    int traverse1(int root) {
+        c[root] = 1;
+        for (int child : adj[root]) {
+            if (child ^ p[root]) {
+                p[child] = root;
+                c[root] += traverse1(child);
+            }
+        }
+        return c[root];
     }
-    return 0;
-}
+    
+    void traverse2(int root) {
+        int first = 0;
+        for (int child : adj[root]) if (child^p[root]&&c[first]<c[child])
+            first = child;
+        for (int child : adj[root]) if (child^p[root]&&child^first)
+            traverse2(child);
+        if (!h[root]) h[root] = root;
+        if (first) {
+            h[first] = h[root];
+            traverse2(first);
+        }
+        f[root] = size++;
+    }
+    
+    int lca(int s, int d) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) return d;
+        return lca(p[h[s]], d);
+    }
+};
+
+struct BOJ11438 {
+    BOJ11438() {
+        int N, K; cin >> N;
+        HeavyLightDecomposition hld(N+1);
+        for (int i = 0; i < N-1; ++i) {
+            int a, b; cin >> a >> b;
+            hld.push(a, b);
+            hld.push(b, a);
+        }
+        hld.traverse1(1);
+        hld.traverse2(1);
+        cin >> K;
+        for (;K--;) {
+            int s, d; cin >> s >> d;
+            cout << hld.lca(s, d) << "\n";
+        }
+    }
+};
