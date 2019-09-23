@@ -107,6 +107,7 @@ struct HLD {
     }
 };
 
+///
 
 struct Graph {
     vector<vector<int>> adj;
@@ -128,7 +129,12 @@ struct HeavyLightDecomposition: Graph {
         adj.resize(size);
     }
     
-    void init(int root, ll val) {
+    void init(int root) { // only lca version
+        traverse1(root);
+        traverse2(root);
+    }
+    
+    void init(int root, ll val) { // segment tree version
         traverse1(root);
         traverse2(root);
         tree.resize(size<<2, val);
@@ -198,6 +204,26 @@ private:
     }
 };
 
+struct BOJ11438 {
+    BOJ11438() {
+        int N, K; cin >> N;
+        HeavyLightDecomposition hld(N+1);
+        for (int i = 0; i < N-1; ++i) {
+            int a, b; cin >> a >> b;
+            hld.push(a, b);
+            hld.push(b, a);
+        }
+        
+        hld.init(1); // root
+        
+        cin >> K;
+        for (;K--;) {
+            int s, d; cin >> s >> d;
+            cout << hld.lca(s, d) << "\n";
+        }
+    }
+};
+
 struct BOJ13309 {
     BOJ13309() {
         int N, Q; cin >> N >> Q;
@@ -224,88 +250,6 @@ struct BOJ13309 {
                     hld.update(c, 0);
                 }
             }
-        }
-    }
-};
-
-
-// only lca version
-struct Graph {
-    vector<vector<int>> adj;
-    void push(int src, int dst) {
-        adj[src].push_back(dst);
-    }
-};
-
-struct HeavyLightDecomposition: Graph {
-    int size = 0;
-    vector<int> c, h, p, f;
-    
-    HeavyLightDecomposition(int size) {
-        c.resize(size);
-        h.resize(size);
-        p.resize(size);
-        f.resize(size);
-        adj.resize(size);
-    }
-    
-    void init(int root) {
-        traverse1(root);
-        traverse2(root);
-    }
-    
-    int lca(int l, int r) {
-        if (f[l] > f[r]) swap(l, r);
-        if (h[l] == h[r]) return r;
-        return lca(p[h[l]], r);
-    }
-    
-private:
-    
-    int traverse1(int root) {
-        c[root] = 1;
-        for (int child : adj[root]) {
-            if (child ^ p[root]) {
-                p[child] = root;
-                c[root] += traverse1(child);
-            }
-        }
-        return c[root];
-    }
-    
-    void traverse2(int root) {
-        int first = 0;
-        for (int child : adj[root])
-            if (child^p[root]&&c[first]<c[child])
-                first = child;
-        for (int child : adj[root])
-            if (child^p[root]&&child^first)
-                traverse2(child);
-        if (!h[root]) h[root] = root;
-        if (first) {
-            h[first] = h[root];
-            traverse2(first);
-        }
-        f[root] = size++;
-    }
-};
-
-struct BOJ11438 {
-    BOJ11438() {
-        int N, K; cin >> N;
-        HeavyLightDecomposition hld(N+1);
-        for (int i = 0; i < N-1; ++i) {
-            int a, b; cin >> a >> b;
-            hld.push(a, b);
-            hld.push(b, a);
-        }
-        
-        hld.init(1);
-        
-        cin >> K;
-        for (;K--;) {
-            int s, d; cin >> s >> d;
-            cout << hld.lca(s, d) << "\n";
         }
     }
 };
