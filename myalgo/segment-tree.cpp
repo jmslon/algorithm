@@ -10,43 +10,6 @@ typedef long long ll;
 
 using namespace std;
 
-struct SegmentTree {
-    int size;
-    vector<ll> arr, tree;
-    ll MEANINGLESS;
-    
-    SegmentTree(int size) {
-        this->size = size;
-        arr.resize(size);
-        tree.resize(size<<2);
-    }
-    
-    ll init(int node, int begin, int end) {
-        if (begin == end) return tree[node] = arr[begin];
-        ll l_init = init(l_node, begin, mid);
-        ll r_init = init(r_node, mid+1, end);
-        return tree[node] = whichof(l_init, r_init);
-    }
-    
-    ll update(int node, int begin, int end, int pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
-        if (begin == end) return tree[node] = val;
-        ll l_update = update(l_node, begin, mid, pos, val);
-        ll r_update = update(r_node, mid+1, end, pos, val);
-        return tree[node] = whichof(l_update, r_update);
-    }
-    
-    ll query(int node, int begin, int end, int l_pos, int r_pos) {
-        if (r_pos < begin || end < l_pos) return MEANINGLESS;
-        if (l_pos <= begin && end <= r_pos) return tree[node];
-        ll l_query = query(l_node, begin, mid, l_pos, r_pos);
-        ll r_query = query(r_node, mid+1, end, l_pos, r_pos);
-        return whichof(l_query, r_query);
-    }
-    
-    virtual ll whichof(ll l, ll r) = 0;
-};
-
 struct MaxSegmentTree {
     vector<ll> arr, tree;
     
