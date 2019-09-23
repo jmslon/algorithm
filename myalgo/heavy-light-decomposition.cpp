@@ -237,7 +237,7 @@ struct Graph {
     }
 };
 
-struct HeavyLightDecomposition: Graph { 
+struct HeavyLightDecomposition: Graph {
     int size = 0;
     vector<int> c, h, p, f;
     
@@ -248,6 +248,19 @@ struct HeavyLightDecomposition: Graph {
         f.resize(size);
         adj.resize(size);
     }
+    
+    void init(int root) {
+        traverse1(root);
+        traverse2(root);
+    }
+    
+    int lca(int l, int r) {
+        if (f[l] > f[r]) swap(l, r);
+        if (h[l] == h[r]) return r;
+        return lca(p[h[l]], r);
+    }
+    
+private:
     
     int traverse1(int root) {
         c[root] = 1;
@@ -262,22 +275,18 @@ struct HeavyLightDecomposition: Graph {
     
     void traverse2(int root) {
         int first = 0;
-        for (int child : adj[root]) if (child^p[root]&&c[first]<c[child])
-            first = child;
-        for (int child : adj[root]) if (child^p[root]&&child^first)
-            traverse2(child);
+        for (int child : adj[root])
+            if (child^p[root]&&c[first]<c[child])
+                first = child;
+        for (int child : adj[root])
+            if (child^p[root]&&child^first)
+                traverse2(child);
         if (!h[root]) h[root] = root;
         if (first) {
             h[first] = h[root];
             traverse2(first);
         }
         f[root] = size++;
-    }
-    
-    int lca(int l, int r) {
-        if (f[l] > f[r]) swap(l, r);
-        if (h[l] == h[r]) return r;
-        return lca(p[h[l]], r);
     }
 };
 
@@ -290,8 +299,9 @@ struct BOJ11438 {
             hld.push(a, b);
             hld.push(b, a);
         }
-        hld.traverse1(1);
-        hld.traverse2(1);
+        
+        hld.init(1);
+        
         cin >> K;
         for (;K--;) {
             int s, d; cin >> s >> d;
