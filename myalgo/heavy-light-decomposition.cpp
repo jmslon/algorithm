@@ -1,8 +1,4 @@
-/*
- Heavy-Light Decomposition
- */
-
-#include <cstdio>
+#include <iostream>
 #include <vector>
 #include <algorithm>
 
