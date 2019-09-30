@@ -13,7 +13,7 @@ using namespace std;
 
 typedef long long ll;
 
-struct DirectedGraph {
+struct DirectedAcyclicGraph {
     struct Edge {
         int src, dst; ll cost; unsigned long key;
     };
@@ -21,7 +21,7 @@ struct DirectedGraph {
     vector<vector<unsigned long>> adj, radj;
     vector<Edge> edges;
     
-    DirectedGraph(int size) {
+    DirectedAcyclicGraph(int size) {
         adj.resize(size);
         radj.resize(size);
     }
@@ -63,14 +63,14 @@ struct DirectedGraph {
         inq[root] = 1; order[root] = ++cnt;
         for (auto idx: adj[root]) {
             auto dst = edges[idx].dst;
-            if (order[dst] == INF) {
+            if (order[dst] == INF) { // tree edge
                 type[idx] = 1;
-            } else if (inq[dst]) {
-                type[idx] = 2;
-            } else if (order[root] < order[dst]) {
-                type[idx] = 3;
-            } else { // never if undirected graph
-                type[idx] = 4;
+            } else if (inq[dst]) { // back edge
+                type[idx] = 2; // never if directed acyclic graph
+            } else if (order[root] < order[dst]) { // forward edge
+                type[idx] = 3; // meaningless if undirected graph
+            } else {
+                type[idx] = 4; // never if undirected graph
             }
             dfs(dst, root, inq, order, cnt, type);
         }
@@ -99,7 +99,7 @@ struct DirectedGraph {
 struct BOJ2252 {
     BOJ2252() {
         int V, E; cin >> V >> E;
-        DirectedGraph dag = V+1;
+        DirectedAcyclicGraph dag = V+1;
         for (int i = 0; i < E; ++i) {
             int a, b; cin >> a >> b;
             dag.push(a, b, 1);
