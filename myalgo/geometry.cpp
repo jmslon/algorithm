@@ -72,10 +72,12 @@ struct PointSet {
 };
 
 struct LineSegment: PointSet {
+    LineSegment():PointSet(2){}
     LineSegment(Vector A, Vector B):PointSet(A, B){}
 };
 
 struct Polygon: PointSet {
+    //Polyton():Polygon(0){}
     Polygon(int size):PointSet(size){}
 };
 
