@@ -12,16 +12,15 @@ using namespace std;
 struct BOJ1912 {
     BOJ1912() {
         int N; cin >> N;
-        vector<int> arr(N);
-        for (int i = 0; i < N; ++i) {
-            cin >> arr[i];
-        }
-        vector<int> dp(N);
-        dp[0] = arr[0];
-        int answer = dp[0];
+        int curr, prev;
+        int tmp; cin >> tmp;
+        int answer = tmp;
+        prev = tmp;
         for (int i = 1; i < N; ++i) {
-            dp[i] = max(0, dp[i-1]) + arr[i];
-            answer = max(answer, dp[i]);
+            cin >> tmp;
+            curr = max(0, prev) + tmp;
+            answer = max(answer, curr);
+            prev = curr;
         }
         cout << answer << endl;
     }
