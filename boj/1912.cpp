@@ -26,10 +26,3 @@ struct BOJ1912 {
         cout << answer << endl;
     }
 };
-
-int main(int argc, const char * argv[]) {
-    
-    BOJ1912 p;
-    
-    return 0;
-}
