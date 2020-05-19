@@ -17,8 +17,6 @@ typedef unsigned long long ull;
 typedef unsigned long ul;
 typedef long long ll;
 
-
-
 struct Graph {
     struct Edge {
         ul src, dst; ll cost;
@@ -52,7 +50,6 @@ struct Graph {
     }
     
 protected:
-    
     ul traverse1(ul root) {
         c[root] = 1;
         for (ul idx : adj[root]) {
@@ -113,8 +110,6 @@ struct BOJ11438 {
 
 
 
-
-
 struct SumSegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree;
     
@@ -138,7 +133,6 @@ struct SumSegmentTree: Graph { // Heavy-Light Decomposition
     }
     
 private:
-    
     ll update(ul node, ul begin, ul end, ul pos, ll val) {
         if (pos < begin || end < pos) return tree[node];
         if (begin == end) return tree[node] = val;
@@ -179,11 +173,6 @@ struct BOJ1716 {
 
 
 
-
-
-
-
-
 struct MaxSegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree;
     MaxSegmentTree(ul size): Graph(size) {
@@ -215,7 +204,6 @@ struct MaxSegmentTree: Graph { // Heavy-Light Decomposition
     }
     
 private:
-    
     ll update(ul node, ul begin, ul end, ul pos, ll val) {
         if (pos < begin || end < pos) return tree[node];
         if (begin == end) return tree[node] = val;
@@ -264,12 +252,6 @@ struct BOJ13510 {
 
 
 
-
-
-
-
-
-
 struct MinSegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree;
     
@@ -295,7 +277,6 @@ struct MinSegmentTree: Graph { // Heavy-Light Decomposition
     }
     
 private:
-    
     ll update(ul node, ul begin, ul end, ul pos, ll val) {
         if (pos < begin || end < pos) return tree[node];
         if (begin == end) return tree[node] = val;
@@ -347,17 +328,18 @@ struct BOJ13309 {
 
 
 
-
 struct SumLazySegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree, lazy;
     SumLazySegmentTree(ul size): Graph(size) {
         tree.resize(size<<2);
         lazy.resize(size<<2);
     }
+    
     void init(ul root) {
         traverse1(root);
         traverse2(root);
     }
+    
     void update(ul s, ul d, ll dif) {
         if (f[s] > f[d]) swap(s, d);
         if (h[s] == h[d]) update(1, 0, size-1, f[s], f[d], dif);
@@ -366,6 +348,7 @@ struct SumLazySegmentTree: Graph { // Heavy-Light Decomposition
             update(p[h[s]], d, dif);
         }
     }
+    
     ll query(ul s, ul d) {
         if (f[s] > f[d]) swap(s, d);
         if (h[s] == h[d]) return query(1, 0, size-1, f[s], f[d]);
@@ -373,6 +356,7 @@ struct SumLazySegmentTree: Graph { // Heavy-Light Decomposition
         ll second = query(p[h[s]], d);
         return (first + second) % MOD;
     }
+    
 private:
     ll update(ul node, ul begin, ul end, ul lpos, ul rpos, ll dif) {
         propagate(node, begin, end, lazy[node]);
@@ -386,6 +370,7 @@ private:
         ll r = update(rnode, mid+1, end, lpos, rpos, dif);
         return tree[node] = (l + r) % MOD;
     }
+    
     ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
@@ -395,6 +380,7 @@ private:
         ll r = query(rnode, mid+1, end, lpos, rpos);
         return (l + r) % MOD;
     }
+    
     void propagate(ul node, ul begin, ul end, ll dif) {
         if (dif == 0) return;
         tree[node] += (end + 1 - begin) * dif;
@@ -436,6 +422,7 @@ struct BOJ15899 {
         cout << answer << "\n";
     }
 };
+
 
 int main() {
     ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
