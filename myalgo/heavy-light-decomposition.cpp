@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 
+#define MOD 1000000007
 #define INF 0x6fffffff
 #define lnode (node<<1)
 #define rnode (lnode+1)
@@ -185,7 +186,6 @@ struct BOJ1716 {
 
 struct MaxSegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree;
-    
     MaxSegmentTree(ul size): Graph(size) {
         tree.resize(size<<2);
     }
@@ -315,7 +315,6 @@ private:
 
 struct BOJ13309 {
     BOJ13309() {
-
         ul V; int Q; cin >> V >> Q;
         MinSegmentTree hld(V+1);
         for (int i = 1; i <= V-1; ++i) {
@@ -349,10 +348,97 @@ struct BOJ13309 {
 
 
 
+struct SumLazySegmentTree: Graph { // Heavy-Light Decomposition
+    vector<ll> tree, lazy;
+    SumLazySegmentTree(ul size): Graph(size) {
+        tree.resize(size<<2);
+        lazy.resize(size<<2);
+    }
+    void init(ul root) {
+        traverse1(root);
+        traverse2(root);
+    }
+    void update(ul s, ul d, ll dif) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) update(1, 0, size-1, f[s], f[d], dif);
+        else {
+            update(s, h[s], dif);
+            update(p[h[s]], d, dif);
+        }
+    }
+    ll query(ul s, ul d) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) return query(1, 0, size-1, f[s], f[d]);
+        ll first = query(s, h[s]);
+        ll second = query(p[h[s]], d);
+        return (first + second) % MOD;
+    }
+private:
+    ll update(ul node, ul begin, ul end, ul lpos, ul rpos, ll dif) {
+        propagate(node, begin, end, lazy[node]);
+        lazy[node] = 0;
+        if (rpos < begin || end < lpos) return tree[node];
+        if (lpos <= begin && end <= rpos) {
+            propagate(node, begin, end, dif);
+            return tree[node];
+        }
+        ll l = update(lnode, begin, mid, lpos, rpos, dif);
+        ll r = update(rnode, mid+1, end, lpos, rpos, dif);
+        return tree[node] = (l + r) % MOD;
+    }
+    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
+        propagate(node, begin, end, lazy[node]);
+        lazy[node] = 0;
+        if (rpos < begin || end < lpos) return 0;
+        if (lpos <= begin && end <= rpos) return tree[node];
+        ll l = query(lnode, begin, mid, lpos, rpos);
+        ll r = query(rnode, mid+1, end, lpos, rpos);
+        return (l + r) % MOD;
+    }
+    void propagate(ul node, ul begin, ul end, ll dif) {
+        if (dif == 0) return;
+        tree[node] += (end + 1 - begin) * dif;
+        if (begin ^ end) {
+            lazy[lnode] += dif;
+            lazy[rnode] += dif;
+        }
+    }
+};
 
+struct BOJ15899 {
+    BOJ15899() {
+        int N, M, C; cin >> N >> M >> C;
+        SumLazySegmentTree hld(N+1);
+        vector<pair<int, ul>> colors(N+1), queries(M);
+        for (int i = 1; i <= N; ++i) {
+            cin >> colors[i].first;
+            colors[i].second = i;
+        }
+        for (int i = 0; i < N-1; ++i) {
+            ul s, d; cin >> s >> d;
+            hld.push(s, d, -1);
+            hld.push(d, s, -1);
+        }
+        hld.init(1);
+        for (int i = 0; i < M; ++i)
+            cin >> queries[i].second >> queries[i].first;
+        
+        sort(colors.begin(), colors.end());
+        sort(queries.begin(), queries.end());
+        
+        ll answer = 0;
+        for (int color = 1, q = 0, c = 1; color <= C; ++color) {
+            for (;c <= N && colors[c].first == color; ++c)
+                hld.update(1, colors[c].second, 1);
+            for (;q < M && queries[q].first == color; ++q)
+                answer = (answer + hld.query(queries[q].second, queries[q].second)) % MOD;
+        }
+        cout << answer << "\n";
+    }
+};
 
 int main() {
     ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
-    BOJ13510 solve;
+    BOJ15899 solve;
     return 0;
 }
