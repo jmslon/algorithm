@@ -1,68 +1,62 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <algorithm>
+#include <set>
+#include <string>
 
-#define l_node  (node<<1)
-#define r_node  ((l_node)+1)
-#define mid     ((begin+end)>>1)
-
-typedef long long ll;
+#define INF 0x6fffffff
+#define lnode (node<<1)
+#define rnode (lnode+1)
+#define mid ((begin+end)>>1)
 
 using namespace std;
 
-struct Graph {
-    vector<vector<int>> adj;
-    void push(int src, int dst) {
-        adj[src].push_back(dst);
-    }
-};
+typedef unsigned long long ull;
+typedef unsigned long ul;
+typedef long long ll;
 
-struct HeavyLightDecomposition: Graph { // Min
+
+
+struct Graph {
+    struct Edge {
+        ul src, dst; ll cost;
+    };
     int size = 0;
-    vector<int> c, h, p, f;
-    vector<ll> tree;
+    vector<ul> c, h, p, f;
+    vector<Edge> edges;
+    vector<vector<ul>> adj;
+    void push(ul src, ul dst, ll cost) {
+        adj[src].push_back(edges.size());
+        edges.push_back({src, dst, cost});
+    }
     
-    HeavyLightDecomposition(int size) {
-        c.resize(size, 1);
+    Graph(ul size) {
+        adj.resize(size);
+        c.resize(size);
         h.resize(size);
         p.resize(size);
         f.resize(size);
-        adj.resize(size);
     }
     
-    void init(int root) { // only lca version
+    void init(ul root) {
         traverse1(root);
         traverse2(root);
     }
     
-    void init(int root, ll val) { // segment tree version
-        traverse1(root);
-        traverse2(root);
-        tree.resize(size<<2, val);
+    ul lca(ul s, ul d) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) return d;
+        return lca(p[h[s]], d);
     }
     
-    void update(int pos, ll val) {
-        update(1, 0, size-2, f[pos], val);
-    }
+protected:
     
-    ll query(int l, int r) {
-        if (f[l] > f[r]) swap (l, r);
-        if (h[l] == h[r]) return query(1, 0, size-2, f[l], f[r]-1);
-        if (!query(1, 0, size-2, f[l], f[h[l]])) return 0;
-        return query(p[h[l]], r);
-    }
-    
-    int lca(int l, int r) {
-        if (f[l] > f[r]) swap(l, r);
-        if (h[l] == h[r]) return r;
-        return lca(p[h[l]], r);
-    }
-    
-private:
-    
-    int traverse1(int root) {
+    ul traverse1(ul root) {
         c[root] = 1;
-        for (int child : adj[root]) {
+        for (ul idx : adj[root]) {
+            auto edge = edges[idx];
+            ul child = edge.dst;
             if (child ^ p[root]) {
                 p[child] = root;
                 c[root] += traverse1(child);
@@ -71,14 +65,20 @@ private:
         return c[root];
     }
     
-    void traverse2(int root) {
-        int first = 0;
-        for (int child : adj[root])
-            if (c[first]<c[child]&&child^p[root])
+    void traverse2(ul root) {
+        ul first = 0;
+        for (ul idx : adj[root]) {
+            auto edge = edges[idx];
+            ul child = edge.dst;
+            if (child ^ p[root]&& c[first] < c[child])
                 first = child;
-        for (int child : adj[root])
-            if (child^first&&child^p[root])
+        }
+        for (ul idx : adj[root]) {
+            auto edge = edges[idx];
+            ul child = edge.dst;
+            if (child ^ p[root] && child ^ first)
                 traverse2(child);
+        }
         if (!h[root])
             h[root] = root;
         if (first) {
@@ -87,61 +87,251 @@ private:
         }
         f[root] = size++;
     }
-    
-    ll update(int node, int begin, int end, int pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
-        if (begin == end) return tree[node] = val;
-        ll l = update(l_node, begin, mid, pos, val);
-        ll r = update(r_node, mid+1, end, pos, val);
-        return tree[node] = l<r?l:r;
-    }
-    
-    ll query(int node, int begin, int end, int l_pos, int r_pos) {
-        if (r_pos < begin || end < l_pos) return INF;
-        if (l_pos <= begin && end <= r_pos) return tree[node];
-        ll l = query(l_node, begin, mid, l_pos, r_pos);
-        ll r = query(r_node, mid+1, end, l_pos, r_pos);
-        return l<r?l:r;
-    }
 };
 
 struct BOJ11438 {
     BOJ11438() {
-        int N, K; cin >> N;
-        HeavyLightDecomposition hld(N+1);
-        for (int i = 0; i < N-1; ++i) {
-            int a, b; cin >> a >> b;
-            hld.push(a, b);
-            hld.push(b, a);
+        ul V; cin >> V;
+        Graph hld(V+1);
+        for (int i = 0; i < V-1; ++i) {
+            ul src, dst;
+            cin >> src >> dst;
+            hld.push(src, dst, 1);
+            hld.push(dst, src, 1);
         }
-        
-        hld.init(1); // root
-        
-        cin >> K;
-        for (;K--;) {
-            int s, d; cin >> s >> d;
-            cout << hld.lca(s, d) << "\n";
+        hld.init(1);
+        ul M; cin >> M;
+        for (int i = 0; i < M; ++i) {
+            ul src, dst;
+            cin >> src >> dst;
+            cout << hld.lca(dst, src) << "\n";
         }
+    }
+};
+
+
+
+
+
+
+struct SumSegmentTree: Graph { // Heavy-Light Decomposition
+    vector<ll> tree;
+    
+    SumSegmentTree(ul size): Graph(size) {
+        tree.resize(size<<2);
+    }
+    
+    void init(ul root) {
+        traverse1(root);
+        traverse2(root);
+        for (auto edge: edges) {
+            if (p[edge.dst] == edge.src) swap(edge.dst, edge.src);
+            update(1, 0, size-2, f[edge.src], edge.cost);
+        }
+    }
+    
+    ll query(ul s, ul d) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) return query(1, 0, size-2, f[s], f[d]-1);
+        return query(1, 0, size-2, f[s], f[h[s]]) + query(p[h[s]], d);
+    }
+    
+private:
+    
+    ll update(ul node, ul begin, ul end, ul pos, ll val) {
+        if (pos < begin || end < pos) return tree[node];
+        if (begin == end) return tree[node] = val;
+        ll l = update(lnode, begin, mid, pos, val);
+        ll r = update(rnode, mid+1, end, pos, val);
+        return tree[node] = l + r;
+    }
+    
+    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
+        if (rpos < begin || end < lpos) return 0;
+        if (lpos <= begin && end <= rpos) return tree[node];
+        ll l = query(lnode, begin, mid, lpos, rpos);
+        ll r = query(rnode, mid+1, end, lpos, rpos);
+        return l + r;
+    }
+};
+
+struct BOJ1716 {
+    BOJ1716() {
+        ul V; cin >> V;
+        SumSegmentTree hld(V+1);
+        for (int i = 0; i < V-1; ++i) {
+            ul src, dst; ll cost;
+            cin >> src >> dst >> cost;
+            hld.push(src, dst, cost);
+            hld.push(dst, src, cost);
+        }
+        hld.init(1);
+        ul M; cin >> M;
+        for (int i = 0; i < M; ++i) {
+            ul s, d;
+            cin >> s >> d;
+            cout << hld.query(s, d) << "\n";
+        }
+    }
+};
+
+
+
+
+
+
+
+
+
+struct MaxSegmentTree: Graph { // Heavy-Light Decomposition
+    vector<ll> tree;
+    
+    MaxSegmentTree(ul size): Graph(size) {
+        tree.resize(size<<2);
+    }
+    
+    void init(ul root) {
+        traverse1(root);
+        traverse2(root);
+        for (auto edge: edges) {
+            ul src = edge.src, dst = edge.dst; ll cost = edge.cost;
+            if (p[dst] == src) swap(dst, src);
+            update(1, 0, size-2, f[src], cost);
+        }
+    }
+    
+    void update(ul s, ll val) {
+        ul src = edges[(s-1)<<1].src, dst = edges[(s-1)<<1].dst;
+        if (p[dst] == src) swap(src, dst);
+        update(1, 0, size-2, f[src], val);
+    }
+    
+    ll query(ul s, ul d) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) return query(1, 0, size-2, f[s], f[d]-1);
+        ll first = query(1, 0, size-2, f[s], f[h[s]]);
+        ll second = query(p[h[s]], d);
+        return first > second ? first : second;
+    }
+    
+private:
+    
+    ll update(ul node, ul begin, ul end, ul pos, ll val) {
+        if (pos < begin || end < pos) return tree[node];
+        if (begin == end) return tree[node] = val;
+        ll l = update(lnode, begin, mid, pos, val);
+        ll r = update(rnode, mid+1, end, pos, val);
+        return tree[node] = l > r ? l : r;
+    }
+    
+    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
+        if (rpos < begin || end < lpos) return 0;
+        if (lpos <= begin && end <= rpos) return tree[node];
+        ll l = query(lnode, begin, mid, lpos, rpos);
+        ll r = query(rnode, mid+1, end, lpos, rpos);
+        return l > r ? l : r;
+    }
+};
+
+struct BOJ13510 {
+    BOJ13510() {
+        ul V; cin >> V;
+        MaxSegmentTree hld(V+1);
+        for (int i = 0; i < V-1; ++i) {
+            ul src, dst; ll cost;
+            cin >> src >> dst >> cost;
+            hld.push(src, dst, cost);
+            hld.push(dst, src, cost);
+        }
+        hld.init((V+1)/2);
+        ul M; cin >> M;
+        for (int i = 0; i < M; ++i) {
+            int n;
+            cin >> n;
+            if (n == 1) {
+                ul s; ll val;
+                cin >> s >> val;
+                hld.update(s, val);
+            } else if (n == 2) {
+                ul s, d;
+                cin >> s >> d;
+                cout << hld.query(s, d) << "\n";
+            }
+        }
+    }
+};
+
+
+
+
+
+
+
+
+
+
+struct MinSegmentTree: Graph { // Heavy-Light Decomposition
+    vector<ll> tree;
+    
+    MinSegmentTree(ul size): Graph(size) {
+        tree.resize(size<<2, 1);
+    }
+    
+    void init(ul root) {
+        traverse1(root);
+        traverse2(root);
+    }
+    
+    void update(ul src, ll val) {
+        update(1, 0, size-2, f[src], val);
+    }
+    
+    ll query(ul s, ul d) {
+        if (f[s] > f[d]) swap(s, d);
+        if (h[s] == h[d]) return query(1, 0, size-2, f[s], f[d]-1);
+        ll first = query(1, 0, size-2, f[s], f[h[s]]);
+        ll second = query(p[h[s]], d);
+        return first < second ? first : second;
+    }
+    
+private:
+    
+    ll update(ul node, ul begin, ul end, ul pos, ll val) {
+        if (pos < begin || end < pos) return tree[node];
+        if (begin == end) return tree[node] = val;
+        ll l = update(lnode, begin, mid, pos, val);
+        ll r = update(rnode, mid+1, end, pos, val);
+        return tree[node] = l < r ? l : r;
+    }
+    
+    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
+        if (rpos < begin || end < lpos) return INF;
+        if (lpos <= begin && end <= rpos) return tree[node];
+        ll l = query(lnode, begin, mid, lpos, rpos);
+        ll r = query(rnode, mid+1, end, lpos, rpos);
+        return l < r ? l : r;
     }
 };
 
 struct BOJ13309 {
     BOJ13309() {
-        int N, Q; cin >> N >> Q;
-        HeavyLightDecomposition hld = N+1;
-        for (int i = 1; i < N; ++i) {
-            int a; cin >> a;
-            hld.p[i+1] = a;
-            hld.adj[a].push_back(i+1);
+
+        ul V; int Q; cin >> V >> Q;
+        MinSegmentTree hld(V+1);
+        for (int i = 1; i <= V-1; ++i) {
+            ul a; cin >> a;
+            hld.push(a, i+1, -1);
+            hld.push(i+1, a, -1);
         }
-        
-        hld.init(1, 1); // root, init_val
-        
-        for (;Q--;) {
+        hld.init(1);
+        for (int i = 0; i < Q; ++i) {
             int b, c, d; cin >> b >> c >> d;
             if (d == 0) {
-                if (hld.query(b, c)) cout << "YES\n";
-                else cout << "NO\n";
+                if (hld.query(b, c)) {
+                    cout << "YES\n";
+                } else {
+                    cout << "NO\n";
+                }
             } else if (d == 1) {
                 if (hld.query(b, c)) {
                     cout << "YES\n";
@@ -156,114 +346,13 @@ struct BOJ13309 {
 };
 
 
-struct Graph {
-    struct Edge {
-        int src, dst; ll w;
-    };
-    vector<Edge> edges;
-    vector<vector<int>> adj;
-    void push(int src, int dst, ll cst) {
-        adj[src].push_back(dst);
-        adj[dst].push_back(src);
-        edges.push_back({src, dst, cst});
-    }
-};
 
-struct HeavyLightDecomposition: Graph { // Sum
-    int size = 0;
-    vector<int> c, h, p, f;
-    vector<ll> tree;
-    
-    HeavyLightDecomposition(int size) {
-        c.resize(size, 1);
-        h.resize(size);
-        p.resize(size);
-        f.resize(size);
-        adj.resize(size);
-    }
-    
-    void init(int root) {
-        traverse1(root);
-        traverse2(root);
-        tree.resize(size<<2);
-        for (auto edge: edges) {
-            if (p[edge.dst] == edge.src) update(1, 0, size-2, f[edge.dst], edge.w);
-            else update(1, 0, size-2, f[edge.src], edge.w);
-        }
-    }
-    
-    void update(int pos, ll val) {
-        update(1, 0, size-2, f[pos], val);
-    }
-    
-    ll query(int s, int d) {
-        if (f[s] > f[d]) swap(s, d);
-        if (h[s] == h[d]) return query(1, 0, size-2, f[s], f[d]-1);
-        return query(1, 0, size-2, f[s], f[h[s]])+query(p[h[s]], d);
-    }
-    
-private:
-    
-    int traverse1(int root) {
-        c[root] = 1;
-        for (int child : adj[root]) {
-            if (child ^ p[root]) {
-                p[child] = root;
-                c[root] += traverse1(child);
-            }
-        }
-        return c[root];
-    }
-    
-    void traverse2(int root) {
-        int first = 0;
-        for (int child : adj[root])
-            if (child ^ p[root]&& c[first] < c[child])
-                first = child;
-        for (int child : adj[root])
-            if (child ^ p[root] && child ^ first)
-                traverse2(child);
-        if (!h[root])
-            h[root] = root;
-        if (first) {
-            h[first] = h[root];
-            traverse2(first);
-        }
-        f[root] = size++;
-    }
-    
-    ll update(int node, int begin, int end, int pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
-        if (begin == end) return tree[node] = val;
-        ll l = update(l_node, begin, mid, pos, val);
-        ll r = update(r_node, mid+1, end, pos, val);
-        return tree[node] = l+r;
-    }
-    
-    ll query(int node, int begin, int end, int l_pos, int r_pos) {
-        if (r_pos < begin || end < l_pos) return 0;
-        if (l_pos <= begin && end <= r_pos) return tree[node];
-        ll l = query(l_node, begin, mid, l_pos, r_pos);
-        ll r = query(r_node, mid+1, end, l_pos, r_pos);
-        return l+r;
-    }
-};
 
-struct BOJ1761 {
-    BOJ1761() {
-        int N, M; cin >> N;
-        HeavyLightDecomposition hld = N+1;
-        for (int i = 1; i < N; ++i) {
-            int u, v; ll w; cin >> u >> v >> w;
-            hld.push(u, v, w);
-        }
-        
-        hld.init(1);
-        
-        cin >> M;
-        for (;M--;) {
-            int s, d; cin >> s >> d;
-            cout << hld.query(s, d) << "\n";
-        }
-    }
-};
+
+
+
+int main() {
+    ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+    BOJ13510 solve;
+    return 0;
+}
