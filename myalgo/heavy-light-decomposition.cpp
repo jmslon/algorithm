@@ -1,9 +1,12 @@
-#include <iostream>
-#include <vector>
-#include <queue>
 #include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <map>
+#include <queue>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #define MOD 1000000007
 #define INF 0x6fffffff
@@ -150,8 +153,8 @@ private:
     }
 };
 
-struct BOJ1716 {
-    BOJ1716() {
+struct BOJ1761 {
+    BOJ1761() {
         ul V; cin >> V;
         SumSegmentTree hld(V+1);
         for (int i = 0; i < V-1; ++i) {
