@@ -103,58 +103,61 @@ struct BOJ5480 {
     }
 };
 
+
+
+
 struct SegmentTree { // Max Lazy Compressed (Plane)
     vector<ll> arr, tree, lazy;
     
     void init() {
         sort(arr.begin(), arr.end());
         arr.erase(unique(arr.begin(), arr.end()), arr.end());
-        tree.resize(arr.size()*4);
-        lazy.resize(arr.size()*4);
+        tree.resize(arr.size()<<2);
+        lazy.resize(arr.size()<<2);
     }
     
-    void update(int l_pos, int r_pos, ll dif) {
-        l_pos = (int) (lower_bound(arr.begin(), arr.end(), l_pos)-arr.begin());
-        r_pos = (int) (lower_bound(arr.begin(), arr.end(), r_pos)-arr.begin());
-        update(1, 0, (int) arr.size()-2, l_pos, r_pos-1, dif);
+    void update(ul lval, ul rval, ll dif) {
+        ul lpos = lower_bound(arr.begin(), arr.end(), lval)-arr.begin();
+        ul rpos = lower_bound(arr.begin(), arr.end(), rval)-arr.begin();
+        update(1, 0, arr.size()-2, lpos, rpos-1, dif);
     }
     
-    ll query(int l_pos, int r_pos) {
-        l_pos = (int) (lower_bound(arr.begin(), arr.end(), l_pos)-arr.begin());
-        r_pos = (int) (lower_bound(arr.begin(), arr.end(), r_pos)-arr.begin());
-        return query(1, 0, (int) arr.size()-2, l_pos, r_pos-1);
+    ll query(ul lval, ul rval) {
+        ul lpos = lower_bound(arr.begin(), arr.end(), lval)-arr.begin();
+        ul rpos = lower_bound(arr.begin(), arr.end(), rval)-arr.begin();
+        return query(1, 0, arr.size()-2, lpos, rpos-1);
     }
     
 private:
-    ll update(int node, int begin, int end, int l_pos, int r_pos, ll dif) {
+    ll update(ul node, ul begin, ul end, ul lpos, ul rpos, ll dif) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
-        if (r_pos < begin || end < l_pos) return tree[node];
-        if (l_pos <= begin && end <= r_pos) {
+        if (rpos < begin || end < lpos) return tree[node];
+        if (lpos <= begin && end <= rpos) {
             propagate(node, begin, end, dif);
             return tree[node];
         }
-        ll l = update(l_node, begin, mid, l_pos, r_pos, dif);
-        ll r = update(r_node, mid+1, end, l_pos, r_pos, dif);
-        return tree[node] = l>r?l:r;
+        ll l = update(lnode, begin, mid, lpos, rpos, dif);
+        ll r = update(rnode, mid+1, end, lpos, rpos, dif);
+        return tree[node] = l > r ? l : r;
     }
     
-    ll query(int node, int begin, int end, int l_pos, int r_pos) {
+    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
-        if (r_pos < begin || end < l_pos) return 0;
-        if (l_pos <= begin && end <= r_pos) return tree[node];
-        ll l = query(l_node, begin, mid, l_pos, r_pos);
-        ll r = query(r_node, mid+1, end, l_pos, r_pos);
-        return l>r?l:r;
+        if (rpos < begin || end < lpos) return 0;
+        if (lpos <= begin && end <= rpos) return tree[node];
+        ll l = query(lnode, begin, mid, lpos, rpos);
+        ll r = query(rnode, mid+1, end, lpos, rpos);
+        return l > r ? l : r;
     }
     
-    void propagate(int node, int begin, int end, ll dif) {
+    void propagate(ul node, ul begin, ul end, ll dif) {
         if (dif == 0) return;
         tree[node] += dif;
         if (begin ^ end) {
-            lazy[l_node] += dif;
-            lazy[r_node] += dif;
+            lazy[lnode] += dif;
+            lazy[rnode] += dif;
         }
     }
 };
@@ -195,7 +198,7 @@ struct BOJ8889 {
                 max_val = max(max_val, vi.x);
             }
         }
-        sort(lines.begin(), lines.end(), [] (auto a, auto b) {
+        sort(lines.begin(), lines.end(), [] (Line &a, Line &b) {
             return a.y == b.y ? a.dif > b.dif : a.y < b.y;
         });
         seg_tree.init();
@@ -204,9 +207,12 @@ struct BOJ8889 {
             seg_tree.update(line.x1, line.x2, line.dif);
             answer = max(answer, seg_tree.query(min_val, max_val));
         }
-        cout << answer << endl;
+        cout << answer << "\n";
     }
 };
+
+
+
 
 struct SegmentTree { // Max Lazy Compressed (Not Plane)
     vector<ll> arr, tree, lazy;
