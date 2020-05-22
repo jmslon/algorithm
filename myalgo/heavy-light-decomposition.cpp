@@ -113,7 +113,7 @@ struct BOJ11438 {
 
 
 
-struct SumSegmentTree: Graph { // Heavy-Light Decomposition
+struct SumSegmentTree: Graph { // Heavy-Light Decomidxition
     vector<ll> tree;
     
     SumSegmentTree(ul size): Graph(size) {
@@ -136,19 +136,19 @@ struct SumSegmentTree: Graph { // Heavy-Light Decomposition
     }
     
 private:
-    ll update(ul node, ul begin, ul end, ul pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
+    ll update(ul node, ul begin, ul end, ul idx, ll val) {
+        if (idx < begin || end < idx) return tree[node];
         if (begin == end) return tree[node] = val;
-        ll l = update(lnode, begin, mid, pos, val);
-        ll r = update(rnode, mid+1, end, pos, val);
+        ll l = update(lnode, begin, mid, idx, val);
+        ll r = update(rnode, mid+1, end, idx, val);
         return tree[node] = l + r;
     }
     
-    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
-        if (rpos < begin || end < lpos) return 0;
-        if (lpos <= begin && end <= rpos) return tree[node];
-        ll l = query(lnode, begin, mid, lpos, rpos);
-        ll r = query(rnode, mid+1, end, lpos, rpos);
+    ll query(ul node, ul begin, ul end, ul lidx, ul ridx) {
+        if (ridx < begin || end < lidx) return 0;
+        if (lidx <= begin && end <= ridx) return tree[node];
+        ll l = query(lnode, begin, mid, lidx, ridx);
+        ll r = query(rnode, mid+1, end, lidx, ridx);
         return l + r;
     }
 };
@@ -176,7 +176,7 @@ struct BOJ1761 {
 
 
 
-struct MaxSegmentTree: Graph { // Heavy-Light Decomposition
+struct MaxSegmentTree: Graph { // Heavy-Light Decomidxition
     vector<ll> tree;
     MaxSegmentTree(ul size): Graph(size) {
         tree.resize(size<<2);
@@ -207,19 +207,19 @@ struct MaxSegmentTree: Graph { // Heavy-Light Decomposition
     }
     
 private:
-    ll update(ul node, ul begin, ul end, ul pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
+    ll update(ul node, ul begin, ul end, ul idx, ll val) {
+        if (idx < begin || end < idx) return tree[node];
         if (begin == end) return tree[node] = val;
-        ll l = update(lnode, begin, mid, pos, val);
-        ll r = update(rnode, mid+1, end, pos, val);
+        ll l = update(lnode, begin, mid, idx, val);
+        ll r = update(rnode, mid+1, end, idx, val);
         return tree[node] = l > r ? l : r;
     }
     
-    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
-        if (rpos < begin || end < lpos) return 0;
-        if (lpos <= begin && end <= rpos) return tree[node];
-        ll l = query(lnode, begin, mid, lpos, rpos);
-        ll r = query(rnode, mid+1, end, lpos, rpos);
+    ll query(ul node, ul begin, ul end, ul lidx, ul ridx) {
+        if (ridx < begin || end < lidx) return 0;
+        if (lidx <= begin && end <= ridx) return tree[node];
+        ll l = query(lnode, begin, mid, lidx, ridx);
+        ll r = query(rnode, mid+1, end, lidx, ridx);
         return l > r ? l : r;
     }
 };
@@ -255,7 +255,7 @@ struct BOJ13510 {
 
 
 
-struct MinSegmentTree: Graph { // Heavy-Light Decomposition
+struct MinSegmentTree: Graph { // Heavy-Light Decomidxition
     vector<ll> tree;
     
     MinSegmentTree(ul size): Graph(size) {
@@ -280,19 +280,19 @@ struct MinSegmentTree: Graph { // Heavy-Light Decomposition
     }
     
 private:
-    ll update(ul node, ul begin, ul end, ul pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
+    ll update(ul node, ul begin, ul end, ul idx, ll val) {
+        if (idx < begin || end < idx) return tree[node];
         if (begin == end) return tree[node] = val;
-        ll l = update(lnode, begin, mid, pos, val);
-        ll r = update(rnode, mid+1, end, pos, val);
+        ll l = update(lnode, begin, mid, idx, val);
+        ll r = update(rnode, mid+1, end, idx, val);
         return tree[node] = l < r ? l : r;
     }
     
-    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
-        if (rpos < begin || end < lpos) return INF;
-        if (lpos <= begin && end <= rpos) return tree[node];
-        ll l = query(lnode, begin, mid, lpos, rpos);
-        ll r = query(rnode, mid+1, end, lpos, rpos);
+    ll query(ul node, ul begin, ul end, ul lidx, ul ridx) {
+        if (ridx < begin || end < lidx) return INF;
+        if (lidx <= begin && end <= ridx) return tree[node];
+        ll l = query(lnode, begin, mid, lidx, ridx);
+        ll r = query(rnode, mid+1, end, lidx, ridx);
         return l < r ? l : r;
     }
 };
@@ -331,7 +331,7 @@ struct BOJ13309 {
 
 
 
-struct SumLazySegmentTree: Graph { // Heavy-Light Decomposition
+struct SumLazySegmentTree: Graph { // Heavy-Light Decomidxition
     vector<ll> tree, lazy;
     SumLazySegmentTree(ul size): Graph(size) {
         tree.resize(size<<2);
@@ -361,26 +361,26 @@ struct SumLazySegmentTree: Graph { // Heavy-Light Decomposition
     }
     
 private:
-    ll update(ul node, ul begin, ul end, ul lpos, ul rpos, ll dif) {
+    ll update(ul node, ul begin, ul end, ul lidx, ul ridx, ll dif) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
-        if (rpos < begin || end < lpos) return tree[node];
-        if (lpos <= begin && end <= rpos) {
+        if (ridx < begin || end < lidx) return tree[node];
+        if (lidx <= begin && end <= ridx) {
             propagate(node, begin, end, dif);
             return tree[node];
         }
-        ll l = update(lnode, begin, mid, lpos, rpos, dif);
-        ll r = update(rnode, mid+1, end, lpos, rpos, dif);
+        ll l = update(lnode, begin, mid, lidx, ridx, dif);
+        ll r = update(rnode, mid+1, end, lidx, ridx, dif);
         return tree[node] = (l + r) % MOD;
     }
     
-    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
+    ll query(ul node, ul begin, ul end, ul lidx, ul ridx) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
-        if (rpos < begin || end < lpos) return 0;
-        if (lpos <= begin && end <= rpos) return tree[node];
-        ll l = query(lnode, begin, mid, lpos, rpos);
-        ll r = query(rnode, mid+1, end, lpos, rpos);
+        if (ridx < begin || end < lidx) return 0;
+        if (lidx <= begin && end <= ridx) return tree[node];
+        ll l = query(lnode, begin, mid, lidx, ridx);
+        ll r = query(rnode, mid+1, end, lidx, ridx);
         return (l + r) % MOD;
     }
     
