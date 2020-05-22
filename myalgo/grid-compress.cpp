@@ -5,13 +5,15 @@
 #include <iostream>
 #include <cmath>
 
-#define l_node (node<<1)
-#define r_node (l_node+1)
-#define mid ((begin+end)>>1)
 #define INF 0x6fffffffffffffff
+#define lnode (node<<1)
+#define rnode (lnode+1)
+#define mid ((begin+end)>>1)
 
 using namespace std;
 
+typedef unsigned long long ull;
+typedef unsigned long ul;
 typedef long long ll;
 
 struct SegmentTree { // Min, Compressed
@@ -20,35 +22,35 @@ struct SegmentTree { // Min, Compressed
     void init() {
         sort(arr.begin(), arr.end());
         arr.erase(unique(arr.begin(), arr.end()), arr.end());
-        tree.resize(arr.size()*4, INF);
+        tree.resize(arr.size()<<2, INF);
     }
     
-    void update(int l_pos, ll val) {
-        l_pos = (int) (lower_bound(arr.begin(), arr.end(), l_pos)-arr.begin());
-        update(1, 0, (int)arr.size()-1, l_pos, val);
+    void update(ll pos, ll val) {
+        ul idx = lower_bound(arr.begin(), arr.end(), pos) - arr.begin();
+        update(1, 0, arr.size()-1, idx, val);
     }
     
-    ll query(int l_pos, int r_pos) {
-        l_pos = (int)(lower_bound(arr.begin(), arr.end(), l_pos)-arr.begin());
-        r_pos = (int)(lower_bound(arr.begin(), arr.end(), r_pos)-arr.begin());
-        return query(1, 0, (int)arr.size()-1, l_pos, r_pos);
+    ll query(ll lpos, ll rpos) {
+        ul lidx = lower_bound(arr.begin(), arr.end(), lpos) - arr.begin();
+        ul ridx = lower_bound(arr.begin(), arr.end(), rpos) - arr.begin();
+        return query(1, 0, arr.size()-1, lidx, ridx);
     }
     
 private:
-    ll update(int node, int begin, int end, int pos, ll val) {
-        if (pos < begin || end < pos) return tree[node];
+    ll update(ul node, ul begin, ul end, ul idx, ll val) {
+        if (idx < begin || end < idx) return tree[node];
         if (begin == end) return tree[node] = val;
-        ll l = update(l_node, begin, mid, pos, val);
-        ll r = update(r_node, mid+1, end, pos, val);
-        return tree[node] = l<r?l:r;
+        ll l = update(lnode, begin, mid, idx, val);
+        ll r = update(rnode, mid+1, end, idx, val);
+        return tree[node] = l < r ? l : r;
     }
     
-    ll query(int node, int begin, int end, int l_pos, int r_pos) {
-        if (r_pos < begin || end < l_pos) return INF;
-        if (l_pos <= begin && end <= r_pos) return tree[node];
-        ll l = query(l_node, begin, mid, l_pos, r_pos);
-        ll r = query(r_node, mid+1, end, l_pos, r_pos);
-        return l<r?l:r;
+    ll query(ul node, ul begin, ul end, ul lidx, ul ridx) {
+        if (ridx < begin || end < lidx) return INF;
+        if (lidx <= begin && end <= ridx) return tree[node];
+        ll l = query(lnode, begin, mid, lidx, ridx);
+        ll r = query(rnode, mid+1, end, lidx, ridx);
+        return l < r ? l : r;
     }
 };
 
