@@ -118,39 +118,39 @@ struct SegmentTree { // Max Lazy Compressed (Plane)
         lazy.resize(arr.size()<<2);
     }
     
-    void update(ul lval, ul rval, ll dif) {
-        ul lpos = lower_bound(arr.begin(), arr.end(), lval)-arr.begin();
-        ul rpos = lower_bound(arr.begin(), arr.end(), rval)-arr.begin();
-        update(1, 0, arr.size()-2, lpos, rpos-1, dif);
+    void update(ll lpos, ll rpos, ll dif) {
+        ul lidx = lower_bound(arr.begin(), arr.end(), lpos) - arr.begin();
+        ul ridx = lower_bound(arr.begin(), arr.end(), rpos) - arr.begin();
+        update(1, 0, arr.size()-2, lidx, ridx-1, dif);
     }
     
-    ll query(ul lval, ul rval) {
-        ul lpos = lower_bound(arr.begin(), arr.end(), lval)-arr.begin();
-        ul rpos = lower_bound(arr.begin(), arr.end(), rval)-arr.begin();
-        return query(1, 0, arr.size()-2, lpos, rpos-1);
+    ll query(ll lpos, ll rpos) {
+        ul lidx = lower_bound(arr.begin(), arr.end(), lpos) - arr.begin();
+        ul ridx = lower_bound(arr.begin(), arr.end(), rpos) - arr.begin();
+        return query(1, 0, arr.size()-2, lidx, ridx-1);
     }
     
 private:
-    ll update(ul node, ul begin, ul end, ul lpos, ul rpos, ll dif) {
+    ll update(ul node, ul begin, ul end, ul lidx, ul ridx, ll dif) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
-        if (rpos < begin || end < lpos) return tree[node];
-        if (lpos <= begin && end <= rpos) {
+        if (ridx < begin || end < lidx) return tree[node];
+        if (lidx <= begin && end <= ridx) {
             propagate(node, begin, end, dif);
             return tree[node];
         }
-        ll l = update(lnode, begin, mid, lpos, rpos, dif);
-        ll r = update(rnode, mid+1, end, lpos, rpos, dif);
+        ll l = update(lnode, begin, mid, lidx, ridx, dif);
+        ll r = update(rnode, mid+1, end, lidx, ridx, dif);
         return tree[node] = l > r ? l : r;
     }
     
-    ll query(ul node, ul begin, ul end, ul lpos, ul rpos) {
+    ll query(ul node, ul begin, ul end, ul lidx, ul ridx) {
         propagate(node, begin, end, lazy[node]);
         lazy[node] = 0;
-        if (rpos < begin || end < lpos) return 0;
-        if (lpos <= begin && end <= rpos) return tree[node];
-        ll l = query(lnode, begin, mid, lpos, rpos);
-        ll r = query(rnode, mid+1, end, lpos, rpos);
+        if (ridx < begin || end < lidx) return 0;
+        if (lidx <= begin && end <= ridx) return tree[node];
+        ll l = query(lnode, begin, mid, lidx, ridx);
+        ll r = query(rnode, mid+1, end, lidx, ridx);
         return l > r ? l : r;
     }
     
@@ -165,10 +165,7 @@ private:
 };
 
 struct BOJ8889 {
-    struct Vector {
-        ll x, y;
-    };
-    
+    struct Vector { ll x, y; };
     struct Polygon {
         vector<Vector> p;
         Polygon(int size) {
@@ -212,7 +209,6 @@ struct BOJ8889 {
         cout << answer << "\n";
     }
 };
-
 
 
 
