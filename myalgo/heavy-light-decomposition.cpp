@@ -113,7 +113,7 @@ struct BOJ11438 {
 
 
 
-struct SumSegmentTree: Graph { // Heavy-Light Decomidxition
+struct SumSegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree;
     
     SumSegmentTree(ul size): Graph(size) {
@@ -176,7 +176,7 @@ struct BOJ1761 {
 
 
 
-struct MaxSegmentTree: Graph { // Heavy-Light Decomidxition
+struct MaxSegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree;
     MaxSegmentTree(ul size): Graph(size) {
         tree.resize(size<<2);
@@ -255,7 +255,7 @@ struct BOJ13510 {
 
 
 
-struct MinSegmentTree: Graph { // Heavy-Light Decomidxition
+struct MinSegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree;
     
     MinSegmentTree(ul size): Graph(size) {
@@ -331,7 +331,7 @@ struct BOJ13309 {
 
 
 
-struct SumLazySegmentTree: Graph { // Heavy-Light Decomidxition
+struct SumLazySegmentTree: Graph { // Heavy-Light Decomposition
     vector<ll> tree, lazy;
     SumLazySegmentTree(ul size): Graph(size) {
         tree.resize(size<<2);
